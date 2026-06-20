@@ -102,4 +102,42 @@ window.iniciarMissao = function() {
 }
 
 // Sistema de Combate / Escolhas da Jornada
-window.fase
+window.faseCriaturas = function(fase) {
+  if (vidaJogador <= 0) {
+    jogo.innerHTML = `
+      <h2 style="color: red;">💀 FIM DE JOGO - Você Desmaiou!</h2>
+      <p>As criaturas da floresta foram fortes demais para você.</p>
+      <button onclick="reiniciarJogo()" style="padding:10px; cursor:pointer;">Tentar Novamente</button>
+    `;
+    return;
+  }
+
+  if (fase === 'serpente') {
+    jogo.innerHTML = `
+      <h2>⚠️ PERIGO: Uma Serpente Gigante apareceu!</h2>
+      <p>Vida Atual: <b>${"❤️".repeat(vidaJogador)}</b></p>
+      <p>Ela está pronta para atacar! O que você faz?</p>
+      <button onclick="faseCriaturas('bicho')" style="padding:10px; margin:5px; background-color:green; color:white; cursor:pointer;">Atacar a Serpente rapidamente!</button>
+      <button onclick="tomarDano('serpente')" style="padding:10px; margin:5px; background-color:orange; cursor:pointer;">Tentar desviar pelo mato</button>
+    `;
+  } else if (fase === 'bicho') {
+    jogo.innerHTML = `
+      <h2>⚠️ PERIGO: O Rival do Tião te cercou!</h2>
+      <p>Vida Atual: <b>${"❤️".repeat(vidaJogador)}</b></p>
+      <p>O capanga rival está com a espingarda do Tião nas mãos e te desafió!</p>
+      <button onclick="faseCriaturas('recuperou')" style="padding:10px; margin:5px; background-color:blue; color:white; cursor:pointer;">Desarmar o rival em um confronto!</button>
+      <button onclick="tomarDano('bicho')" style="padding:10px; margin:5px; background-color:orange; cursor:pointer;">Correr para cima dele</button>
+    `;
+  } else if (fase === 'recuperou') {
+    pegouEspingarda = true;
+    informacaoEspecial = true;
+    suspeitosInvestigados["Cangaceiro"] = true;
+    
+    jogo.innerHTML = `
+      <h2>✨ MISSÃO CUMPRIDA!</h2>
+      <p>Você derrotou os perigos e conseguiu recuperar a Espingarda!</p>
+      <p>Você volta até o Tião e entrega a arma dele.</p>
+      <p><b>Tião:</b> 'Homem de palavra! Vou te contato o que vi: Eu vi o <b>Seu Zé</b> escondendo o relógio dentro do celeiro ontem à noite!'</p>
+      <hr>
+      <p>Com essa informação especial, você já pode dar o veredito final!</p>
+      <button onclick="mostrarPainelInvestigacao()" style="padding:12px; background-color: #5
