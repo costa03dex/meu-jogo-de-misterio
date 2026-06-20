@@ -1,5 +1,4 @@
 // --- CONFIGURAÇÃO INICIAL DO JOGO ---
-
 let temPegadaNaLama = false;
 let temTecidoNoArame = false;
 let temBilheteRasgado = false;
@@ -12,57 +11,68 @@ let suspeitoAtual = "Padre";
 // Escolha entre: "Seu Zé", "Padre" ou "Dona Maria"
 let quemVoceVaiAcusar = "Seu Zé"; 
 
+// Criando a tela para o jogo aparecer no site
+let tela = document.createElement("div");
+tela.style.padding = "20px";
+tela.style.fontFamily = "sans-serif";
+tela.style.lineHeight = "1.6";
+tela.style.fontSize = "18px";
+document.body.appendChild(tela);
+
+function mostrar(texto) {
+  tela.innerHTML += texto + "<br>";
+}
+
 // --- INÍCIO DA HISTÓRIA ---
-console.log("--- CASO: O SUMIÇO DO RELÓGIO DE OURO ---");
-console.log("O Coronel Neto está desesperado! O relógio de bolso da família sumiu.");
-console.log("Você está no vilarejo investigando o suspeito: " + suspeitoAtual);
+mostrar("<h2>🕵️‍♂️ CASO: O SUMIÇO DO RELÓGIO DE OURO 🕵️‍♂️</h2>");
+mostrar("O Coronel Neto está desesperado! O relógio de bolso da família sumiu.");
+mostrar("Você está no vilarejo investigando o suspeito: <b>" + suspeitoAtual + "</b>");
+mostrar("<hr>");
 
 // Interrogatório do Seu Zé
 if (suspeitoAtual === "Seu Zé") {
-  console.log("Detetive: 'Seu Zé, onde o senhor estava na hora do crime?'");
-  console.log("Seu Zé: 'Cuidando das vacas, moço... Mas confesso que andei perto do casarão.'");
+  mostrar("<b>Detetive:</b> 'Seu Zé, onde o senhor estava na hora do crime?'");
+  mostrar("<b>Seu Zé:</b> 'Cuidando das vacas, moço... Mas confesso que andei perto do casarão.'");
   
   temPegadaNaLama = true;
   totalPistasConseguiu = totalPistasConseguiu + 1;
   
-  console.log("🔍 [PISTA ENCONTRADA]: Você achou uma pegada de bota de lama perto da janela!");
+  mostrar("<br>🔍 <b>[PISTA ENCONTRADA]:</b> Você achou uma pegada de bota de lama perto da janela!");
 }
 
 // Interrogatório do Padre
 else if (suspeitoAtual === "Padre") {
-  console.log("Você vai até a igrejinha da cidade...");
-  console.log("Padre: 'Ontem à noite eu estava rezando sozinho... mas ouvi passos no canavial.'");
+  mostrar("Você vai até a igrejinha da cidade...");
+  mostrar("<b>Padre:</b> 'Ontem à noite eu estava rezando sozinho... mas ouvi passos no canavial.'");
   
   temBilheteRasgado = true;
   totalPistasConseguiu = totalPistasConseguiu + 1;
   
-  console.log("🔍 [PISTA ENCONTRADA]: Você achou um bilhete rasgado perto do altar!");
+  mostrar("<br>🔍 <b>[PISTA ENCONTRADA]:</b> Você achou um bilhete rasgado perto do altar!");
 }
 
 // Interrogatório da Dona Maria
 else if (suspeitoAtual === "Dona Maria") {
-  console.log("Você vai até a casa da benzedeira na beira do canavial...");
-  console.log("Dona Maria: 'Eu vi uma luz estranha brilhando perto do moinho abandonado tarde da noite!'");
+  mostrar("Você vai até a casa da benzedeira na beira do canavial...");
+  mostrar("<b>Dona Maria:</b> 'Eu vi uma luz estranha brilhando perto do moinho abandonado tarde da noite!'");
   
   temTecidoNoArame = true;
   totalPistasConseguiu = totalPistasConseguiu + 1;
   
-  console.log("🔍 [PISTA ENCONTRADA]: Você achou um pedaço de tecido preso na cerca!");
+  mostrar("<br>🔍 <b>[PISTA ENCONTRADA]:</b> Você achou um pedaço de tecido preso na cerca!");
 }
 
-console.log("---------------------------------------------");
-console.log("Total de pistas encontradas na rodada: " + totalPistasConseguiu);
-console.log("O tempo acabou! Hora de dar o veredito.");
-console.log("Você acusou oficialmente: " + quemVoceVaiAcusar);
-console.log("---------------------------------------------");
+mostrar("<hr>");
+mostrar("Total de pistas encontradas na rodada: <b>" + totalPistasConseguiu + "</b>");
+mostrar("O tempo acabou! Hora de dar o veredito.");
+mostrar("Você acusou oficialmente: <b>" + quemVoceVaiAcusar + "</b>");
+mostrar("<hr>");
 
 // --- O JULGAMENTO (FIM DO JOGO) ---
-
-// O verdadeiro culpado neste mistério é o Seu Zé (a bota de lama entrega ele)!
 if (quemVoceVaiAcusar === "Seu Zé") {
-  console.log("🎉 PARABÉNS, DETETIVE! Você acertou!");
-  console.log("A pegada de lama na janela combinava com as botas do Seu Zé. O relógio estava no celeiro dele!");
+  mostrar("<h3 style='color: green;'>🎉 PARABÉNS, DETETIVE! Você acertou!</h3>");
+  mostrar("A pegada de lama na janela combinava com as botas do Seu Zé. O relógio estava no celeiro dele!");
 } else {
-  console.log("❌ VOCÊ ERROU O PALPITE!");
-  console.log("O suspeito acusado tinha um álibi perfeito. O verdadeiro ladrão fugiu com o relógio do Coronel!");
+  mostrar("<h3 style='color: red;'>❌ VOCÊ ERROU O PALPITE!</h3>");
+  mostrar("O suspeito acusado tinha um álibi perfeito. O verdadeiro ladrão fugiu com o relógio do Coronel!");
 }
