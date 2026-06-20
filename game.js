@@ -1,20 +1,30 @@
-// O inventário do detetive
-let pistas = 0;
-let suspeitoEscolhido = "Padre"; // Mude para "Seu Zé" para interrogar o outro!
+// --- CONFIGURAÇÃO INICIAL DO JOGO ---
 
-console.log("--- INVESTIGAÇÃO: MISTÉRIO NA ROÇA ---");
-console.log("Você está na praça da cidade. Quem você quer interrogar?");
+// As pistas que o jogador pode encontrar (começam como false porque ainda não foram achadas)
+let temPegadaNaLama = false;
+let temTecidoNoArame = false;
+let temBilheteRasgado = false;
 
-if (suspeitoEscolhido === "Seu Zé") {
-  console.log("Você vai até a fazenda...");
-  console.log("Seu Zé: 'Eu estava cuidando das vacas, moço. Não vi nada!'");
-} 
-else if (suspeitoEscolhido === "Padre") {
-  console.log("Você vai até a igrejinha da cidade...");
-  console.log("Padre: 'Ontem à noite eu estava rezando sozinho... mas ouvi passos no canavial.'");
-  pistas = pistas + 1;
-  console.log("Nova pista obtida! Total de pistas: " + pistas);
-} 
-else {
-  console.log("Esse suspeito não existe na cidade.");
+// Contador de pistas coletadas
+let totalPistasConseguiu = 0;
+
+// O suspeito que o jogador está investigando no momento
+let suspeitoAtual = "Seu Zé"; 
+
+// --- INÍCIO DA HISTÓRIA ---
+console.log("--- CASO: O SUMIÇO DO RELÓGIO DE OURO ---");
+console.log("O Coronel Neto está desesperado! O relógio de bolso da família sumiu.");
+console.log("Você está no vilarejo investigando o suspeito: " + suspeitoAtual);
+
+// Lógica do primeiro interrogatório (Seu Zé)
+if (suspeitoAtual === "Seu Zé") {
+  console.log("Detetive: 'Seu Zé, onde o senhor estava na hora do crime?'");
+  console.log("Seu Zé: 'Cuidando das vacas, moço... Mas confesso que andei perto do casarão.'");
+  
+  // O detetive olha em volta e acha a primeira pista!
+  temPegadaNaLama = true;
+  totalPistasConseguiu = totalPistasConseguiu + 1;
+  
+  console.log("🔍 [PISTA ENCONTRADA]: Você achou uma pegada de bota de lama perto da janela!");
+  console.log("Total de pistas encontradas: " + totalPistasConseguiu);
 }
