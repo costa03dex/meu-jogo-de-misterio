@@ -1,23 +1,20 @@
-// 1. Criando as variáveis para guardar o progresso do jogador
-let pistasColetadas = 0;
-let encontrouArmaDoCrime = true; // Mude para false para ver o outro resultado!
+// O inventário do detetive
+let pistas = 0;
+let suspeitoEscolhido = "Padre"; // Mude para "Seu Zé" para interrogar o outro!
 
-// 2. A função que roda quando você interroga o suspeito
-function interrogarSeuZe() {
-  console.log("Detetive: 'Seu Zé, onde o senhor estava ontem à noite?'");
+console.log("--- INVESTIGAÇÃO: MISTÉRIO NA ROÇA ---");
+console.log("Você está na praça da cidade. Quem você quer interrogar?");
+
+if (suspeitoEscolhido === "Seu Zé") {
+  console.log("Você vai até a fazenda...");
   console.log("Seu Zé: 'Eu estava cuidando das vacas, moço. Não vi nada!'");
-  
-  // 3. O sistema tomando uma decisão (If / Else)
-  if (encontrouArmaDoCrime === true) {
-    console.log("Detetive: 'Mentira! Nós achamos a sua enxada suja perto do canavial.'");
-    console.log("Seu Zé fica nervoso e começa a chorar...");
-    pistasColetadas = pistasColetadas + 1;
-    console.log("Nova pista adicionada! Total de pistas: " + pistasColetadas);
-  } else {
-    console.log("Detetive: 'Entendi... Se lembrar de algo, me avise.'");
-    console.log("Você saiu da casa do Seu Zé sem nenhuma pista nova.");
-  }
+} 
+else if (suspeitoEscolhido === "Padre") {
+  console.log("Você vai até a igrejinha da cidade...");
+  console.log("Padre: 'Ontem à noite eu estava rezando sozinho... mas ouvi passos no canavial.'");
+  pistas = pistas + 1;
+  console.log("Nova pista obtida! Total de pistas: " + pistas);
+} 
+else {
+  console.log("Esse suspeito não existe na cidade.");
 }
-
-// 4. Executando a conversa
-interrogarSeuZe();
