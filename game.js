@@ -1,168 +1,112 @@
-// Limpando a tela antiga
+// Limpa a tela antiga
 document.body.innerHTML = "";
 
-// Criando a caixinha do jogo
-let jogo = document.createElement("div");
-jogo.style.padding = "20px";
-jogo.style.fontFamily = "sans-serif";
-jogo.style.fontSize = "18px";
-jogo.style.lineHeight = "1.6";
-document.body.appendChild(jogo);
+// Cria o título
+let titulo = document.createElement("h2");
+titulo.innerText = "🕹️ Teste de Movimentação 2D (Use as Setas do Teclado)";
+titulo.style.fontFamily = "sans-serif";
+titulo.style.textAlign = "center";
+document.body.appendChild(titulo);
 
-// Variaveis do Jogo
-let pistasEncontradas = 0;
-let vidaJogador = 3;
-let informacaoEspecial = false;
+// Cria a tela do jogo (Canvas)
+let canvas = document.createElement("canvas");
+canvas.width = 600;
+canvas.height = 400;
+canvas.style.backgroundColor = "#e0e0e0";
+canvas.style.display = "block";
+canvas.style.margin = "0 auto";
+canvas.style.border = "4px solid #333";
+document.body.appendChild(canvas);
 
-let suspeitosInvestigados = {
-  "Seu Ze": false,
-  "Padre": false,
-  "Dona Maria": false,
-  "Cangaceiro": false
+// Contexto para desenhar na tela
+let ctx = canvas.getContext("2d");
+
+// Posição e tamanho do Detetive (Quadrado Azul)
+let detetive = {
+  x: 50,
+  y: 180,
+  tamanho: 30,
+  velocidade: 5
 };
 
-// Tela Inicial do Jogo
-function mostrarPainelInvestigacao() {
-  jogo.innerHTML = `
-    <h2>🕵️‍♂️ CASO: O SUMICO DO RELOGIO DE OURO 🕵️‍♂️</h2>
-    <p>O Coronel Neto esta desesperado! O relogio de bolso sumiu do casarao.</p>
-    <p><b>Pistas encontradas: ${pistasEncontradas} / 3</b></p>
-    ${informacaoEspecial ? "<p style='color: purple;'>✨ <b>Info Especial ativa:</b> Voce sabe o segredo do casarao!</p>" : ""}
-    <hr>
-    <h3>📍 Escolha sua acao no vilarejo:</h3>
-  `;
+// Posição do Suspeito (Quadrado Vermelho)
+let suspeito = {
+  x: 450,
+  y: 170,
+  tamanho: 40
+};
 
-  if (!suspeitosInvestigados["Seu Ze"]) {
-    jogo.innerHTML += `<button onclick="interrogar('Seu Ze')" style="padding:10px; margin:5px; cursor:pointer;">Interrogar Seu Ze (O Caseiro)</button>`;
-  }
-  if (!suspeitosInvestigados["Padre"]) {
-    jogo.innerHTML += `<button onclick="interrogar('Padre')" style="padding:10px; margin:5px; cursor:pointer;">Interrogar Padre (Da Igrejinha)</button>`;
-  }
-  if (!suspeitosInvestigados["Dona Maria"]) {
-    jogo.innerHTML += `<button onclick="interrogar('Dona Maria')" style="padding:10px; margin:5px; cursor:pointer;">Interrogar Dona Maria</button>`;
-  }
-  if (!suspeitosInvestigados["Cangaceiro"]) {
-    jogo.innerHTML += `<br><br><button onclick="iniciarMissao()" style="padding:12px; margin:5px; background-color: #f0ad4e; color: black; font-weight: bold; cursor:pointer; border-radius:5px;">🔥 Falar com Tiao Cangaceiro (Missao Secreta)</button>`;
-  }
+// Objeto para guardar quais teclas estão pressionadas
+let teclas = {};
 
-  if (pistasEncontradas >= 3 || informacaoEspecial) {
-    jogo.innerHTML += `
-      <hr>
-      <h3 style="color: #d9534f;">🚨 HORA DO VEREDITO FINAL:</h3>
-      <button onclick="acusar('Seu Ze')" style="padding:10px; margin:5px; background-color:#ffcccb; font-weight:bold; cursor:pointer;">Acusar Seu Ze</button>
-      <button onclick="acusar('Padre')" style="padding:10px; margin:5px; background-color:#ffcccb; font-weight:bold; cursor:pointer;">Acusar Padre</button>
-      <button onclick="acusar('Dona Maria')" style="padding:10px; margin:5px; background-color:#ffcccb; font-weight:bold; cursor:pointer;">Acusar Dona Maria</button>
-    `;
+// Escuta quando o jogador aperta uma tecla
+window.addEventListener("keydown", function(evento) {
+  teclas[evento.key] = true;
+});
+
+// Escuta quando o jogador solta uma tecla
+window.addEventListener("keyup", function(evento) {
+  teclas[evento.key] = false;
+});
+
+// Função que atualiza a lógica do jogo (Movimentação)
+function atualizar() {
+  // Move para a esquerda
+  if (teclas["ArrowLeft"] && detetive.x > 0) {
+    detetive.x -= detetive.velocidade;
   }
-}
-
-window.interrogar = function(suspeito) {
-  suspeitosInvestigados[suspeito] = true;
-  let fala = "";
-  let pista = "";
-
-  if (suspeito === "Seu Ze") {
-    fala = "<b>Seu Ze:</b> 'Eu estava com as vacas... mas vi marcas estranhas na janela.'";
-    pista = "🔍 [PISTA]: Pegada de bota com lama perto da janela!";
-    pistasEncontradas++;
-  } else if (suspeito === "Padre") {
-    fala = "<b>Padre:</b> 'Ouvi passos correndo em direcao ao canavial ontem a noite.'";
-    pista = "🔍 [PISTA]: Pedaco de corda de saco de ouro no altar!";
-    pistasEncontradas++;
-  } else if (suspeito === "Dona Maria") {
-    fala = "<b>Dona Maria:</b> 'Vi uma sombra brilhando perto do moinho abandonado.'";
-    pista = "🔍 [PISTA]: Botao de camisa luxuosa preso na cerca!";
-    pistasEncontradas++;
+  // Move para a direita
+  if (teclas["ArrowRight"] && detetive.x < canvas.width - detetive.tamanho) {
+    detetive.x += detetive.velocidade;
+  }
+  // Move para cima
+  if (teclas["ArrowUp"] && detetive.y > 0) {
+    detetive.y -= detetive.velocidade;
+  }
+  // Move para baixo
+  if (teclas["ArrowDown"] && detetive.y < canvas.height - detetive.tamanho) {
+    detetive.y += detetive.velocidade;
   }
 
-  jogo.innerHTML = `
-    <h2>🕵️‍♂️ INVESTIGANDO...</h2>
-    <p>${fala}</p>
-    <p style="color: blue;">${pista}</p>
-    <br>
-    <button onclick="mostrarPainelInvestigacao()" style="padding:10px; background-color: #5cb85c; color: white; border:none; cursor:pointer;">Voltar</button>
-  `;
-}
-
-window.iniciarMissao = function() {
-  jogo.innerHTML = `
-    <h2>🤠 O Acordo com Tiao Cangaceiro</h2>
-    <p><b>Tiao:</b> 'Eu invadi o casarao ontem e sei exatamente quem pegou o relogio... Mas perdi minha espingarda no canavial enquanto fugia de um rival. Se voce recupera-la, eu te conto tudo!'</p>
-    <br>
-    <button onclick="faseCriaturas('serpente')" style="padding:12px; background-color: #d9534f; color:white; font-weight:bold; cursor:pointer;">Avancar no Canavial 🐍</button>
-  `;
-}
-
-window.faseCriaturas = function(fase) {
-  if (vidaJogador <= 0) {
-    jogo.innerHTML = `
-      <h2 style="color: red;">💀 FIM DE JOGO</h2>
-      <p>Voce desmaiou no canavial.</p>
-      <button onclick="reiniciarJogo()" style="padding:10px; cursor:pointer;">Tentar Novamente</button>
-    `;
-    return;
-  }
-
-  if (fase === 'serpente') {
-    jogo.innerHTML = `
-      <h2>⚠️ PERIGO: Uma Serpente apareceu!</h2>
-      <p>Vida: <b>${"❤️".repeat(vidaJogador)}</b></p>
-      <button onclick="faseCriaturas('bicho')" style="padding:10px; margin:5px; background-color:green; color:white; cursor:pointer;">Atacar a Serpente!</button>
-      <button onclick="tomarDano('serpente')" style="padding:10px; margin:5px; background-color:orange; cursor:pointer;">Tentar desviar</button>
-    `;
-  } else if (fase === 'bicho') {
-    jogo.innerHTML = `
-      <h2>⚠️ PERIGO: O Rival te cercou!</h2>
-      <p>Vida: <b>${"❤️".repeat(vidaJogador)}</b></p>
-      <button onclick="faseCriaturas('recuperou')" style="padding:10px; margin:5px; background-color:blue; color:white; cursor:pointer;">Desarmar o rival!</button>
-      <button onclick="tomarDano('bicho')" style="padding:10px; margin:5px; background-color:orange; cursor:pointer;">Correr para cima dele</button>
-    `;
-  } else if (fase === 'recuperou') {
-    informacaoEspecial = true;
-    suspeitosInvestigados["Cangaceiro"] = true;
-    
-    jogo.innerHTML = `
-      <h2>✨ MISSAO CUMPRIDA!</h2>
-      <p>Voce recuperou a Espingarda e entregou ao Tiao!</p>
-      <p><b>Tiao:</b> 'Boa! Eu vi o <b>Seu Ze</b> escondendo o relogio no celeiro ontem a noite!'</p>
-      <br>
-      <button onclick="mostrarPainelInvestigacao()" style="padding:12px; background-color: #5cb85c; color:white; cursor:pointer;">Ir para o Veredito</button>
-    `;
-  }
-}
-
-window.tomarDano = function(ondeParou) {
-  vidaJogador--;
-  alert("Voce tomou dano e perdeu 1 de vida!");
-  if (ondeParou === 'serpente') {
-    faseCriaturas('bicho');
+  // Lógica de "Colisão" (Se o detetive encostar no suspeito)
+  if (
+    detetive.x < suspeito.x + suspeito.tamanho &&
+    detetive.x + detetive.tamanho > suspeito.x &&
+    detetive.y < suspeito.y + suspeito.tamanho &&
+    detetive.y + detetive.tamanho > suspeito.y
+  ) {
+    // Se encostar, muda a cor do suspeito para verde como feedback
+    suspeito.cor = "green";
   } else {
-    faseCriaturas('recuperou');
+    suspeito.cor = "red";
   }
 }
 
-window.acusar = function(suspeitoAcusado) {
-  if (suspeitoAcusado === "Seu Ze") {
-    jogo.innerHTML = `
-      <h2 style='color: green;'>🎉 PARABENS! VOCE VENCEU!</h2>
-      <p>O relogio estava no celeiro do Seu Ze! Caso Encerrado!</p>
-      <br><button onclick="reiniciarJogo()" style="padding:10px; cursor:pointer;">Jogar Novamente</button>
-    `;
-  } else {
-    jogo.innerHTML = `
-      <h2 style='color: red;'>❌ VOCE ERROU!</h2>
-      <p>O culpado era outro e fugiu!</p>
-      <br><button onclick="reiniciarJogo()" style="padding:10px; cursor:pointer;">Jogar Novamente</button>
-    `;
-  }
+// Função que desenha tudo na tela
+function desenhar() {
+  // Limpa a tela inteira para desenhar de novo
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Desenha o Suspeito (Alvo)
+  ctx.fillStyle = suspeito.cor;
+  ctx.fillRect(suspeito.x, suspeito.y, suspeito.tamanho, suspeito.tamanho);
+  
+  // Texto em cima do suspeito
+  ctx.fillStyle = "#000";
+  ctx.font = "14px sans-serif";
+  ctx.fillText("Suspeito", suspeito.x - 5, suspeito.y - 10);
+
+  // Desenha o Detetive (Jogador)
+  ctx.fillStyle = "blue";
+  ctx.fillRect(detetive.x, detetive.y, detetive.tamanho, detetive.tamanho);
 }
 
-window.reiniciarJogo = function() {
-  pistasEncontradas = 0;
-  vidaJogador = 3;
-  informacaoEspecial = false;
-  suspeitosInvestigados = { "Seu Ze": false, "Padre": false, "Dona Maria": false, "Cangaceiro": false };
-  mostrarPainelInvestigacao();
+// O "Game Loop" - Executa isso sem parar para animar o jogo
+function loop() {
+  atualizar();
+  desenhar();
+  requestAnimationFrame(loop); // Chama o próximo frame de animação
 }
 
-mostrarPainelInvestigacao();
+// Inicia o motor do jogo 2D
+loop();
