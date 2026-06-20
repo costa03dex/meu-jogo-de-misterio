@@ -9,117 +9,160 @@ jogo.style.fontSize = "18px";
 jogo.style.lineHeight = "1.6";
 document.body.appendChild(jogo);
 
-// Variáveis para controlar o progresso do jogador
+// Variaveis do Jogo
 let pistasEncontradas = 0;
+let vidaJogador = 3;
+let informacaoEspecial = false;
+
 let suspeitosInvestigados = {
-  "Seu Zé": false,
+  "Seu Ze": false,
   "Padre": false,
   "Dona Maria": false,
   "Cangaceiro": false
 };
 
-// Função principal que mostra a tela inicial de investigação
+// Tela Inicial do Jogo
 function mostrarPainelInvestigacao() {
   jogo.innerHTML = `
-    <h2>🕵️‍♂️ CASO: O SUMIÇO DO RELÓGIO DE OURO 🕵️‍♂️</h2>
-    <p>O Coronel Neto está desesperado! O relógio de bolso da família sumiu do casarão.</p>
-    <p>Você precisa investigar os suspeitos no vilarejo para encontrar <b>3 pistas</b> antes de fazer sua acusação final!</p>
+    <h2>🕵️‍♂️ CASO: O SUMICO DO RELOGIO DE OURO 🕵️‍♂️</h2>
+    <p>O Coronel Neto esta desesperado! O relogio de bolso sumiu do casarao.</p>
     <p><b>Pistas encontradas: ${pistasEncontradas} / 3</b></p>
+    ${informacaoEspecial ? "<p style='color: purple;'>✨ <b>Info Especial ativa:</b> Voce sabe o segredo do casarao!</p>" : ""}
     <hr>
-    <h3>📍 Escolha quem interrogar agora:</h3>
+    <h3>📍 Escolha sua acao no vilarejo:</h3>
   `;
 
-  // Botão Seu Zé
-  if (!suspeitosInvestigados["Seu Zé"]) {
-    jogo.innerHTML += `<button onclick="interrogar('Seu Zé')" style="padding:10px; margin:5px; font-size:16px; cursor:pointer;">Interrogar Seu Zé (O Caseiro)</button>`;
+  if (!suspeitosInvestigados["Seu Ze"]) {
+    jogo.innerHTML += `<button onclick="interrogar('Seu Ze')" style="padding:10px; margin:5px; cursor:pointer;">Interrogar Seu Ze (O Caseiro)</button>`;
   }
-  // Botão Padre
   if (!suspeitosInvestigados["Padre"]) {
-    jogo.innerHTML += `<button onclick="interrogar('Padre')" style="padding:10px; margin:5px; font-size:16px; cursor:pointer;">Interrogar Padre (Da Igrejinha)</button>`;
+    jogo.innerHTML += `<button onclick="interrogar('Padre')" style="padding:10px; margin:5px; cursor:pointer;">Interrogar Padre (Da Igrejinha)</button>`;
   }
-  // Botão Dona Maria
   if (!suspeitosInvestigados["Dona Maria"]) {
-    jogo.innerHTML += `<button onclick="interrogar('Dona Maria')" style="padding:10px; margin:5px; font-size:16px; cursor:pointer;">Interrogar Dona Maria (A Benzedeira)</button>`;
+    jogo.innerHTML += `<button onclick="interrogar('Dona Maria')" style="padding:10px; margin:5px; cursor:pointer;">Interrogar Dona Maria</button>`;
   }
-  // Novo Personagem: O Cangaceiro
   if (!suspeitosInvestigados["Cangaceiro"]) {
-    jogo.innerHTML += `<button onclick="interrogar('Cangaceiro')" style="padding:10px; margin:5px; font-size:16px; cursor:pointer;">Interrogar Tião (O Cangaceiro Viajante)</button>`;
+    jogo.innerHTML += `<br><br><button onclick="iniciarMissao()" style="padding:12px; margin:5px; background-color: #f0ad4e; color: black; font-weight: bold; cursor:pointer; border-radius:5px;">🔥 Falar com Tiao Cangaceiro (Missao Secreta)</button>`;
   }
 
-  // Só libera a acusação depois de achar pelo menos 3 pistas!
-  if (pistasEncontradas >= 3) {
+  if (pistasEncontradas >= 3 || informacaoEspecial) {
     jogo.innerHTML += `
       <hr>
-      <h3 style="color: #d9534f;">🚨 VOCÊ JÁ TEM PISTAS SUFICIENTES! HORA DO VEREDITO:</h3>
-      <p>Quem é o verdadeiro culpado pelo roubo?</p>
-      <button onclick="acusar('Seu Zé')" style="padding:10px; margin:5px; font-size:16px; background-color:#ffcccb; font-weight:bold; cursor:pointer;">Acusar Seu Zé</button>
-      <button onclick="acusar('Padre')" style="padding:10px; margin:5px; font-size:16px; background-color:#ffcccb; font-weight:bold; cursor:pointer;">Acusar Padre</button>
-      <button onclick="acusar('Dona Maria')" style="padding:10px; margin:5px; font-size:16px; background-color:#ffcccb; font-weight:bold; cursor:pointer;">Acusar Dona Maria</button>
-      <button onclick="acusar('Cangaceiro')" style="padding:10px; margin:5px; font-size:16px; background-color:#ffcccb; font-weight:bold; cursor:pointer;">Acusar Tião Cangaceiro</button>
+      <h3 style="color: #d9534f;">🚨 HORA DO VEREDITO FINAL:</h3>
+      <button onclick="acusar('Seu Ze')" style="padding:10px; margin:5px; background-color:#ffcccb; font-weight:bold; cursor:pointer;">Acusar Seu Ze</button>
+      <button onclick="acusar('Padre')" style="padding:10px; margin:5px; background-color:#ffcccb; font-weight:bold; cursor:pointer;">Acusar Padre</button>
+      <button onclick="acusar('Dona Maria')" style="padding:10px; margin:5px; background-color:#ffcccb; font-weight:bold; cursor:pointer;">Acusar Dona Maria</button>
     `;
   }
 }
 
-// Função para processar os interrogatórios
 window.interrogar = function(suspeito) {
-  suspeitosInvestigados[suspeito] = true; // Marca que já conversou com ele
+  suspeitosInvestigados[suspeito] = true;
   let fala = "";
   let pista = "";
 
-  if (suspeito === "Seu Zé") {
-    fala = "<b>Seu Zé:</b> 'Eu estava cuidando das vacas, moço... Mas confesso que vi um rastro estranho perto da janela do casarão.'";
-    pista = "🔍 <b>[PISTA]:</b> Você achou uma pegada de bota cheia de lama perto da janela!";
+  if (suspeito === "Seu Ze") {
+    fala = "<b>Seu Ze:</b> 'Eu estava com as vacas... mas vi marcas estranhas na janela.'";
+    pista = "🔍 [PISTA]: Pegada de bota com lama perto da janela!";
     pistasEncontradas++;
   } else if (suspeito === "Padre") {
-    fala = "<b>Padre:</b> 'Ontem à noite eu estava rezando sozinho... mas ouvi passos correndo em direção ao canavial.'";
-    pista = "🔍 <b>[PISTA]:</b> Você encontrou um pedaço de corda de amarrar saco de ouro perto do altar!";
+    fala = "<b>Padre:</b> 'Ouvi passos correndo em direcao ao canavial ontem a noite.'";
+    pista = "🔍 [PISTA]: Pedaco de corda de saco de ouro no altar!";
     pistasEncontradas++;
   } else if (suspeito === "Dona Maria") {
-    fala = "<b>Dona Maria:</b> 'Eu estava colhendo ervas e vi uma sombra misteriosa brilhando perto do moinho abandonado tarde da noite!'";
-    pista = "🔍 <b>[PISTA]:</b> Você achou um botão de camisa luxuosa preso na cerca de arame!";
-    pistasEncontradas++;
-  } else if (suspeito === "Cangaceiro") {
-    fala = "<b>Tião Cangaceiro:</b> 'Eu acabei de chegar na cidade, seu doutor! Não sei de nada, mas vi o Seu Zé limpando as botas no rio hoje bem cedo...'";
-    pista = "🔍 <b>[PISTA]:</b> O depoimento do Tião joga fortes suspeitas sobre o caseiro!";
+    fala = "<b>Dona Maria:</b> 'Vi uma sombra brilhando perto do moinho abandonado.'";
+    pista = "🔍 [PISTA]: Botao de camisa luxuosa preso na cerca!";
     pistasEncontradas++;
   }
 
-  // Mostra o resultado do interrogatório na tela
   jogo.innerHTML = `
-    <h2>🕵️‍♂️ INTERROGANDO: ${suspeito.toUpperCase()}</h2>
+    <h2>🕵️‍♂️ INVESTIGANDO...</h2>
     <p>${fala}</p>
     <p style="color: blue;">${pista}</p>
     <br>
-    <button onclick="mostrarPainelInvestigacao()" style="padding:12px; font-size:16px; background-color: #5cb85c; color: white; border: none; cursor:pointer; border-radius: 5px;">Continuar Investigando</button>
+    <button onclick="mostrarPainelInvestigacao()" style="padding:10px; background-color: #5cb85c; color: white; border:none; cursor:pointer;">Voltar</button>
   `;
 }
 
-// Função do julgamento (Fim do Jogo)
-window.acusar = function(suspeitoAcusado) {
-  // Resetando o jogo para poder jogar de novo depois
-  let botaoReiniciar = `<br><br><button onclick="reiniciar Jogo()" style="padding:10px; font-size:16px; cursor:pointer;">Jogar Novamente</button>`;
+window.iniciarMissao = function() {
+  jogo.innerHTML = `
+    <h2>🤠 O Acordo com Tiao Cangaceiro</h2>
+    <p><b>Tiao:</b> 'Eu invadi o casarao ontem e sei exatamente quem pegou o relogio... Mas perdi minha espingarda no canavial enquanto fugia de um rival. Se voce recupera-la, eu te conto tudo!'</p>
+    <br>
+    <button onclick="faseCriaturas('serpente')" style="padding:12px; background-color: #d9534f; color:white; font-weight:bold; cursor:pointer;">Avancar no Canavial 🐍</button>
+  `;
+}
 
-  if (suspeitoAcusado === "Seu Zé") {
+window.faseCriaturas = function(fase) {
+  if (vidaJogador <= 0) {
     jogo.innerHTML = `
-      <h2 style='color: green;'>🎉 PARABÉNS, DETETIVE! VOCÊ DESVENDOU O MISTÉRIO!</h2>
-      <p>A pegada de lama na janela combinava com as botas dele, e o Tião confirmou que ele tentou limpá-las! O relógio de ouro do Coronel estava escondido no fundo do celeiro do Seu Zé.</p>
-      ${botaoReiniciar}
+      <h2 style="color: red;">💀 FIM DE JOGO</h2>
+      <p>Voce desmaiou no canavial.</p>
+      <button onclick="reiniciarJogo()" style="padding:10px; cursor:pointer;">Tentar Novamente</button>
     `;
-  } else {
+    return;
+  }
+
+  if (fase === 'serpente') {
     jogo.innerHTML = `
-      <h2 style='color: red;'>❌ VOCÊ ERROU O VEREDITO!</h2>
-      <p>Você acusou o(a) <b>${suspeitoAcusado}</b>. Porém, as pistas de lama e o depoimento apontavam para outra pessoa. O verdadeiro ladrão conseguiu escapar do vilarejo!</p>
-      ${botaoReiniciar}
+      <h2>⚠️ PERIGO: Uma Serpente apareceu!</h2>
+      <p>Vida: <b>${"❤️".repeat(vidaJogador)}</b></p>
+      <button onclick="faseCriaturas('bicho')" style="padding:10px; margin:5px; background-color:green; color:white; cursor:pointer;">Atacar a Serpente!</button>
+      <button onclick="tomarDano('serpente')" style="padding:10px; margin:5px; background-color:orange; cursor:pointer;">Tentar desviar</button>
+    `;
+  } else if (fase === 'bicho') {
+    jogo.innerHTML = `
+      <h2>⚠️ PERIGO: O Rival te cercou!</h2>
+      <p>Vida: <b>${"❤️".repeat(vidaJogador)}</b></p>
+      <button onclick="faseCriaturas('recuperou')" style="padding:10px; margin:5px; background-color:blue; color:white; cursor:pointer;">Desarmar o rival!</button>
+      <button onclick="tomarDano('bicho')" style="padding:10px; margin:5px; background-color:orange; cursor:pointer;">Correr para cima dele</button>
+    `;
+  } else if (fase === 'recuperou') {
+    informacaoEspecial = true;
+    suspeitosInvestigados["Cangaceiro"] = true;
+    
+    jogo.innerHTML = `
+      <h2>✨ MISSAO CUMPRIDA!</h2>
+      <p>Voce recuperou a Espingarda e entregou ao Tiao!</p>
+      <p><b>Tiao:</b> 'Boa! Eu vi o <b>Seu Ze</b> escondendo o relogio no celeiro ontem a noite!'</p>
+      <br>
+      <button onclick="mostrarPainelInvestigacao()" style="padding:12px; background-color: #5cb85c; color:white; cursor:pointer;">Ir para o Veredito</button>
     `;
   }
 }
 
-// Função para resetar as variáveis e recomeçar
+window.tomarDano = function(ondeParou) {
+  vidaJogador--;
+  alert("Voce tomou dano e perdeu 1 de vida!");
+  if (ondeParou === 'serpente') {
+    faseCriaturas('bicho');
+  } else {
+    faseCriaturas('recuperou');
+  }
+}
+
+window.acusar = function(suspeitoAcusado) {
+  if (suspeitoAcusado === "Seu Ze") {
+    jogo.innerHTML = `
+      <h2 style='color: green;'>🎉 PARABENS! VOCE VENCEU!</h2>
+      <p>O relogio estava no celeiro do Seu Ze! Caso Encerrado!</p>
+      <br><button onclick="reiniciarJogo()" style="padding:10px; cursor:pointer;">Jogar Novamente</button>
+    `;
+  } else {
+    jogo.innerHTML = `
+      <h2 style='color: red;'>❌ VOCE ERROU!</h2>
+      <p>O culpado era outro e fugiu!</p>
+      <br><button onclick="reiniciarJogo()" style="padding:10px; cursor:pointer;">Jogar Novamente</button>
+    `;
+  }
+}
+
 window.reiniciarJogo = function() {
   pistasEncontradas = 0;
-  suspeitosInvestigados = { "Seu Zé": false, "Padre": false, "Dona Maria": false, "Cangaceiro": false };
+  vidaJogador = 3;
+  informacaoEspecial = false;
+  suspeitosInvestigados = { "Seu Ze": false, "Padre": false, "Dona Maria": false, "Cangaceiro": false };
   mostrarPainelInvestigacao();
 }
 
-// Inicializa o jogo
 mostrarPainelInvestigacao();
