@@ -15,7 +15,7 @@ estilo.innerHTML = `
 `;
 document.head.appendChild(estilo);
 
-// O canvas agora ocupa a tela livremente, sem títulos acima dele
+// O canvas ocupa a tela livremente
 let canvas = document.createElement("canvas");
 canvas.width = 1408;  
 canvas.height = 768;
@@ -36,18 +36,60 @@ function carregarImagem(src) {
     return img;
 }
 
-// --- SISTEMA DE ÁUDIO ---
+// --- SISTEMA DE ÁUDIO REFEITO E EXPANDIDO ---
 let somPassos = new Audio("https://actions.google.com/sounds/v1/sfx/footsteps_on_cement.ogg");
 somPassos.loop = true;
-let somPista = new Audio("https://actions.google.com/sounds/v1/sfx/ui_click.ogg");
-let somClick = new Audio("https://actions.google.com/sounds/v1/multimedia/ambient_click.ogg");
 
-let somMusica = new Audio("https://upload.wikimedia.org/wikipedia/commons/5/5b/Suspense_Music_Loop.ogg");
-somMusica.loop = true;
-somMusica.volume = 0.4; 
+// Efeitos Sonoros (SFX)
+let somPista = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"); // Som impactante para pistas
+somPista.volume = 0.6;
+let somClickDialogo = new Audio("https://actions.google.com/sounds/v1/sfx/ui_click.ogg"); // Som para passar falas/interagir
+let somMenuOpcoes = new Audio("https://actions.google.com/sounds/v1/multimedia/ambient_click.ogg"); // Som ao escolher perguntas 1 e 2
 
-window.addEventListener("click", () => { somMusica.play().catch(() => {}); }, { once: true });
-window.addEventListener("keydown", () => { somMusica.play().catch(() => {}); }, { once: true });
+// Trilhas Sonoras (Músicas de Fundo)
+let musicaMisterio = new Audio("https://upload.wikimedia.org/wikipedia/commons/5/5b/Suspense_Music_Loop.ogg");
+musicaMisterio.loop = true;
+musicaMisterio.volume = 0.4; 
+
+let musicaTensa30s = new Audio("https://actions.google.com/sounds/v1/music/gothic_dark_epic_heroic.ogg"); // Trilha de perseguição/urgência
+musicaTensa30s.loop = true;
+musicaTensa30s.volume = 0.5;
+
+let musicaAtiva = "MISTERIO"; // Controla qual música está tocando para não dar conflito
+
+function gerenciarMusicaFundo() {
+    // Se faltar 30 segundos ou menos e a música tensa ainda não estiver tocando
+    if (tempoRestante <= 30 && tempoRestante > 0 && estadoJogo !== "INTRO" && estadoJogo !== "FIM" && estadoJogo !== "FIM_TEMPO") {
+        if (musicaAtiva !== "TENSA") {
+            musicaMisterio.pause();
+            musicaTensa30s.currentTime = 0;
+            musicaTensa30s.play().catch(() => {});
+            musicaAtiva = "TENSA";
+        }
+    } else {
+        // Caso contrário, toca a música normal de mistério (se o jogo estiver rodando)
+        if (musicaAtiva !== "MISTERIO" && (estadoJogo === "EXPLORANDO" || estadoJogo === "DIALOGO" || estadoJogo === "RIVAL_DIALOGO")) {
+            musicaTensa30s.pause();
+            musicaMisterio.play().catch(() => {});
+            musicaAtiva = "MISTERIO";
+        }
+    }
+    
+    // Para todas as músicas se o jogo acabar
+    if (estadoJogo === "FIM" || estadoJogo === "FIM_TEMPO") {
+        musicaMisterio.pause();
+        musicaTensa30s.pause();
+    }
+}
+
+// Ativa o áudio no primeiro clique ou tecla do jogador devido às regras dos navegadores
+function ligarMusicaInicial() {
+    if (musicaAtiva === "MISTERIO" && musicaMisterio.paused && estadoJogo !== "FIM" && estadoJogo !== "FIM_TEMPO") {
+        musicaMisterio.play().catch(() => {});
+    }
+}
+window.addEventListener("click", ligarMusicaInicial, { once: true });
+window.addEventListener("keydown", ligarMusicaInicial, { once: true });
 
 // Imagens 
 let mapaImg = carregarImagem("mapa.png"); 
@@ -77,12 +119,13 @@ let tempoMaximo = 180;
 let tempoRestante = tempoMaximo;
 
 let timerJogo = setInterval(() => {
-    // Só consome tempo se não estiver lendo o caderno
     if (!cadernoAberto && (estadoJogo === "EXPLORANDO" || estadoJogo === "DIALOGO" || estadoJogo === "RIVAL_DIALOGO")) {
         if (tempoRestante > 0) {
             tempoRestante--;
+            gerenciarMusicaFundo(); // Checa a cada segundo se precisa trocar a música
         } else {
             estadoJogo = "FIM_TEMPO";
+            gerenciarMusicaFundo();
         }
     }
 }, 1000);
@@ -111,10 +154,10 @@ let suspeitosNomes = ["Rival", "Tião", "Padre", "Seu Zé", "Dona Maria"];
 let textosIntro = [
     "Em um dia aparentemente comum na pequena cidade da roça, um grande crime abalou a tranquilidade dos moradores. No alto do morro, na casa mais luxuosa da região, vivia o respeitado presidente Jairo. Entre seus bens mais valiosos estava um relógio de ouro raro, uma relíquia de família passada de geração em geração durante décadas.",
     "Mas, ao amanhecer, uma notícia chocante se espalhou pela cidade: o relógio havia sido roubado!",
-    "O desaparecimento da preciosa herança gerou medo, dúvidas e muitas suspeitas. Entre os moradores, um nome logo começou a ser comentado: Tião. Mas será que ele é realmente o culpado ou está sendo acusado injustamente?",
+    "O desaparecimento da preciosa herança gerou medo, dúvidas e muitas suspeitas. Entre os moradores, um nome logo começou a ser comentando: Tião. Mas será que ele é realmente o culpado ou está sendo acusado injustamente?",
     "Diante desse mistério, precisamos da ajuda do melhor detetive da região. E esse detetive é você!",
     "Sua missão será investigar as pistas, interrogar os suspeitos, descobrir o verdadeiro ladrão e, acima de tudo, provar se Tião é culpado ou inocente.",
-    "Boa sorte, detetive. O trem parte em 3 minutos! Solucione o caso antes que o culpado fuja."
+    "Boa sorte, detetive. O trem parte em 3 minutes! Solucione o caso antes que o culpado fuja."
 ];
 let introFase = 0;
 
@@ -137,7 +180,7 @@ let keys = {};
 function acionarAcao(tecla) {
     if (estadoJogo === "INTRO") {
         if (tecla === " ") {
-            somClick.play();
+            somClickDialogo.play(); // Som ao avançar introdução
             introFase++; charIndex = 0;
             if (introFase >= textosIntro.length) estadoJogo = "EXPLORANDO";
         }
@@ -147,16 +190,15 @@ function acionarAcao(tecla) {
     // Controle do Caderno do Detetive (abre com C)
     if (tecla.toLowerCase() === "c") {
         if (estadoJogo === "EXPLORANDO" || cadernoAberto) {
-            somClick.play();
+            somMenuOpcoes.play(); // Som ao abrir/fechar caderno
             cadernoAberto = !cadernoAberto;
             return;
         }
     }
     
-    // Se o caderno estiver aberto, bloqueia outras ações
     if (cadernoAberto) {
         if (tecla === " ") { 
-            somClick.play();
+            somMenuOpcoes.play();
             cadernoAberto = false;
         }
         return; 
@@ -164,7 +206,7 @@ function acionarAcao(tecla) {
 
     if (estadoJogo === "RIVAL_DIALOGO") {
         if (tecla === " ") {
-            somClick.play();
+            somClickDialogo.play(); // Som ao passar caixas de diálogo do Rival
             if (charIndex < textosRival[falaRival].length) { charIndex = textosRival[falaRival].length; } 
             else {
                 falaRival++; charIndex = 0;
@@ -176,7 +218,7 @@ function acionarAcao(tecla) {
 
     if (estadoJogo === "TRANSICAO_FINAL") {
         if (tecla === " ") {
-            somClick.play();
+            somClickDialogo.play();
             transicaoFase++; charIndex = 0;
             if (transicaoFase >= textosTransicao.length) estadoJogo = "ACUSACAO";
         }
@@ -184,9 +226,9 @@ function acionarAcao(tecla) {
     }
 
     if (estadoJogo === "ACUSACAO") {
-        if (tecla === "ArrowRight") { suspeitoSelecionado = (suspeitoSelecionado + 1) % 5; somClick.play(); }
-        if (tecla === "ArrowLeft") { suspeitoSelecionado = (suspeitoSelecionado - 1 + 5) % 5; somClick.play(); }
-        if (tecla === " ") { somPista.play(); estadoJogo = "FIM"; }
+        if (tecla === "ArrowRight") { suspeitoSelecionado = (suspeitoSelecionado + 1) % 5; somMenuOpcoes.play(); }
+        if (tecla === "ArrowLeft") { suspeitoSelecionado = (suspeitoSelecionado - 1 + 5) % 5; somMenuOpcoes.play(); }
+        if (tecla === " ") { somPista.play(); estadoJogo = "FIM"; gerenciarMusicaFundo(); }
         return;
     }
 
@@ -196,12 +238,12 @@ function acionarAcao(tecla) {
         let pertoItem = itensCenario.find(i => colidindo(hitboxInteracao, i) && !i.coletado);
 
         if (pertoNPC) {
-            somClick.play();
+            somClickDialogo.play(); // Som ao iniciar conversa com NPC
             npcFoco = pertoNPC;
             textoResposta = ""; charIndex = 0;
             estadoJogo = "DIALOGO";
         } else if (pertoItem) {
-            somPista.play();
+            somPista.play(); // SOM DE COLETAR PISTA DO CENÁRIO 🎵
             pertoItem.coletado = true;
             pistasColetadas++;
             anotacoes.push(pertoItem.textoPista); 
@@ -215,19 +257,20 @@ function acionarAcao(tecla) {
         if (charIndex < textoResposta.length) {
             charIndex = textoResposta.length; 
         } else {
-            somClick.play();
+            somClickDialogo.play(); // Som ao fechar a caixa de resposta
             estadoJogo = "EXPLORANDO"; npcFoco = null;
         }
     }
 
     if (estadoJogo === "DIALOGO" && textoResposta === "" && npcFoco && npcFoco.tipo !== "sistema") {
         if (tecla === "1") {
-            somClick.play();
+            somMenuOpcoes.play(); // Som ao pressionar opção de pergunta 1 🎵
             if (npcFoco.tipo === "rival") {
                 estadoJogo = "RIVAL_DIALOGO"; falaRival = 0; charIndex = 0;
             } else {
                 textoResposta = npcFoco.resposta1; charIndex = 0;
                 if (npcFoco.daPista1 && !npcFoco.pistaColetada) { 
+                    somPista.play(); // SOM DE COLETAR PISTA VIA DIÁLOGO 🎵
                     pistasColetadas++; 
                     npcFoco.pistaColetada = true; 
                     if (npcFoco.textoPista1) anotacoes.push(npcFoco.textoPista1);
@@ -235,9 +278,10 @@ function acionarAcao(tecla) {
             }
         }
         if (tecla === "2") {
-            somClick.play();
+            somMenuOpcoes.play(); // Som ao pressionar opção de pergunta 2 🎵
             textoResposta = npcFoco.resposta2; charIndex = 0;
             if (npcFoco.daPista2 && !npcFoco.pistaColetada) { 
+                somPista.play(); // SOM DE COLETAR PISTA VIA DIÁLOGO 🎵
                 pistasColetadas++; 
                 npcFoco.pistaColetada = true; 
                 if (npcFoco.textoPista2) anotacoes.push(npcFoco.textoPista2);
