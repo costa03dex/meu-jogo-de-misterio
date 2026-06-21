@@ -116,19 +116,26 @@ let suspeitosNomes = ["Rival", "Tião", "Padre", "Seu Zé", "Dona Maria"];
 
 // --- TEXTOS ---
 let textosIntro = [
-    "O valioso relógio de ouro do presidente Jairo foi roubado nesta noite!",
-    "Todos na cidade apontam o dedo para o pobre Tião.",
-    "Investigue a área, colete provas e interrogue os moradores.",
-    "O verdadeiro culpado planeja fugir no trem das 18h. Você tem 3 minutos!"
+    "Em um dia aparentemente comum na pequena cidade da roça, um grande crime abalou a tranquilidade dos moradores. No alto do morro, na casa mais luxuosa da região, vivia o respeitado presidente Jairo.",
+    "Mas, ao amanhecer, uma notícia chocante se espalhou pela cidade: seu raro relógio de ouro havia sido roubado!",
+    "O desaparecimento da preciosa herança gerou medo, dúvidas e muitas suspeitas. Entre os moradores, um nome logo começou a ser comentado: Tião.",
+    "Sua missão será investigar as pistas, interrogar os suspeitos, descobrir o verdadeiro ladrão e provar se Tião é culpado ou inocente.",
+    "Boa sorte, detetive. O trem parte em 3 minutos! Solucione o caso antes que o culpado fuja."
 ];
 let introFase = 0;
 
 let textosRival = [
-    "Detetive, tenha dó de mim! Jamais roubaria o relógio do presidente.",
-    "Encontre o verdadeiro culpado e prove minha inocência!"
+    "Detetive, tenha dó de mim! Sou um homem muito respeitado e prestigiado nesta cidade...",
+    "Mas, nos últimos dias, o presidente Jairo se voltou contra mim. Não sei o motivo, mas ele passou a me tratar com desconfiança.",
+    "Eu juro pela minha honra: jamais faria uma coisa dessas com ele. Posso ter minhas diferenças, mas nunca roubarei uma relíquia de família.",
+    "Peço apenas que investigue os fatos antes de me julgar. Encontre o verdadeiro culpado e prove minha inocência."
 ];
 
-let textosTransicao = ["E agora, detetive? Quem é o verdadeiro culpado?"];
+let textosTransicao = [
+    "E agora, detetive? Todos os envolvidos parecem esconder algum segredo.",
+    "Algumas provas apontam para um suspeito, enquanto outras parecem inocentá-lo. Em quem confiar?",
+    "Quem roubou o relógio de ouro do presidente Jairo?"
+];
 let textosExplicacao = []; let explicacaoFase = 0;
 
 let keys = {};
