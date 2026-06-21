@@ -188,4 +188,123 @@ function colidindo(r1, r2) {
 function update() {
     if (estadoJogo === "EXPLORANDO") {
         if (keys["ArrowUp"]) detetive.y -= detetive.speed;
-        if (keys["ArrowDown"]) det
+        if (keys["ArrowDown"]) detetive.y += detetive.speed;
+        if (keys["ArrowLeft"]) detetive.x -= detetive.speed;
+        if (keys["ArrowRight"]) detetive.x += detetive.speed;
+
+        if (detetive.x < 0) detetive.x = 0;
+        if (detetive.y < 0) detetive.y = 0;
+        if (detetive.x + detetive.w > canvas.width) detetive.x = canvas.width - detetive.w;
+        if (detetive.y + detetive.h > canvas.height) detetive.y = canvas.height - detetive.h;
+    }
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (mapaImg.complete && mapaImg.naturalWidth > 0) {
+        ctx.drawImage(mapaImg, 0, 0, canvas.width, canvas.height);
+    } else {
+        ctx.fillStyle = "#333";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "white";
+        ctx.font = "20px Arial";
+        ctx.fillText("Carregando mapa...", 500, 380);
+    }
+
+    for (let npc of npcs) {
+        if (npc.img.complete && npc.img.naturalWidth > 0) {
+            ctx.drawImage(npc.img, npc.x, npc.y, npc.w, npc.h);
+        } else {
+            ctx.fillStyle = "purple"; ctx.fillRect(npc.x, npc.y, npc.w, npc.h);
+        }
+        
+        if (npc.tipo === "testemunha" && !npc.pistaColetada) {
+            ctx.fillStyle = "yellow"; ctx.font = "bold 35px Arial";
+            ctx.fillText("!", npc.x + 35, npc.y - 5);
+        }
+    }
+
+    if (detetiveImg.complete && detetiveImg.naturalWidth > 0) {
+        ctx.drawImage(detetiveImg, detetive.x, detetive.y, detetive.w, detetive.h);
+    } else {
+        ctx.fillStyle = "blue"; ctx.fillRect(detetive.x, detetive.y, detetive.w, detetive.h);
+    }
+
+    if (estadoJogo === "EXPLORANDO") {
+        let perto = npcs.find(n => colidindo(detetive, n));
+        if (perto) {
+            ctx.fillStyle = "rgba(0,0,0,0.85)";
+            ctx.fillRect(detetive.x - 20, detetive.y - 45, 130, 30);
+            ctx.fillStyle = "white";
+            ctx.font = "bold 13px sans-serif";
+            ctx.fillText("Botão A / ESPAÇO", detetive.x - 12, detetive.y - 25);
+        }
+    }
+
+    ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+    ctx.fillRect(20, 20, 200, 45); 
+    ctx.strokeStyle = "#64ffda";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(20, 20, 200, 45);
+    ctx.fillStyle = "#64ffda";
+    ctx.font = "bold 18px sans-serif";
+    ctx.fillText("🔎 Provas: " + pistasColetadas + " / " + totalPistas, 45, 48);
+
+    if (estadoJogo === "DIALOGO") {
+        ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
+        ctx.fillRect(154, 540, 1100, 180);
+        ctx.strokeStyle = "#64ffda";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(154, 540, 1100, 180);
+        
+        ctx.fillStyle = "#64ffda";
+        ctx.font = "bold 26px Arial";
+        ctx.fillText(npcFoco.nome + ":", 190, 585);
+
+        ctx.fillStyle = "white";
+        ctx.font = "21px Arial";
+
+        if (textoResposta !== "") {
+            ctx.fillText(textoResposta, 190, 635);
+            ctx.fillStyle = "#94a3b8";
+            ctx.font = "16px Arial";
+            ctx.fillText("[ Aperte A (ou ESPAÇO) para fechar ]", 190, 690);
+        } 
+        else if (npcFoco.tipo !== "rival") {
+            ctx.fillStyle = "#e2e8f0";
+            ctx.fillText("Escolha o que perguntar (botões 1 ou 2):", 190, 625);
+            ctx.fillStyle = "#64ffda";
+            ctx.fillText(npcFoco.pergunta1, 210, 665);
+            ctx.fillText(npcFoco.pergunta2, 210, 695);
+        }
+    }
+
+    if (estadoJogo === "FIM") {
+        ctx.fillStyle = "rgba(0, 15, 5, 0.92)"; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = "#ffe600"; 
+        ctx.textAlign = "center";
+        ctx.font = "bold 70px sans-serif";
+        ctx.fillText("🏆 VOCÊ VENCEU!", canvas.width / 2, canvas.height / 2 - 30);
+        
+        ctx.fillStyle = "white";
+        ctx.font = "26px sans-serif";
+        ctx.fillText("O Rival foi desmascarado e o Tião está livre!", canvas.width / 2, canvas.height / 2 + 30);
+        
+        ctx.fillStyle = "#64ffda";
+        ctx.font = "bold 20px sans-serif";
+        ctx.fillText(">> Atualize a página para jogar novamente <<", canvas.width / 2, canvas.height / 2 + 100);
+        ctx.textAlign = "left"; 
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+function gameLoop() {
+    update();
+    draw();
+}
+
+gameLoop();
