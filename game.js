@@ -423,12 +423,37 @@ function draw() {
 
     if (estadoJogo === "FIM") {
         ctx.fillStyle = "rgba(0, 15, 5, 0.95)"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.textAlign = "center"; 
-        if (suspeitoSelecionado === 0 && pistasColetadas >= totalPistas) { ctx.fillStyle = "#ffe600"; ctx.font = "bold 70px sans-serif"; ctx.fillText("🏆 FINAL VERDADEIRO", canvas.width / 2, canvas.height / 2 - 20); } 
-        else if (suspeitoSelecionado === 0 && pistasColetadas < totalPistas) { ctx.fillStyle = "#a8a8a8"; ctx.font = "bold 70px sans-serif"; ctx.fillText("⚖️ FINAL NEUTRO", canvas.width / 2, canvas.height / 2 - 20); } 
-        else if (suspeitoSelecionado === 2) { ctx.fillStyle = "#b5179e"; ctx.font = "bold 70px sans-serif"; ctx.fillText("🤫 FINAL SECRETO", canvas.width / 2, canvas.height / 2 - 20); } 
-        else { ctx.fillStyle = "#ff4444"; ctx.font = "bold 70px sans-serif"; ctx.fillText("❌ FINAL RUIM", canvas.width / 2, canvas.height / 2 - 20); }
-        ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("FIM DE JOGO", canvas.width / 2, canvas.height / 2 + 50);
-        ctx.fillStyle = "#64ffda"; ctx.font = "bold 20px sans-serif"; ctx.fillText(">> Atualize a página para jogar novamente <<", canvas.width / 2, canvas.height / 2 + 150); ctx.textAlign = "left"; 
+        
+        let tituloFim = ""; let corTitulo = ""; let nota = "";
+        if (suspeitoSelecionado === 0 && pistasColetadas >= totalPistas) { 
+            tituloFim = "🏆 FINAL VERDADEIRO"; corTitulo = "#ffe600"; nota = "A";
+        } else if (suspeitoSelecionado === 0 && pistasColetadas < totalPistas) { 
+            tituloFim = "⚖️ FINAL NEUTRO"; corTitulo = "#a8a8a8"; nota = "B";
+        } else if (suspeitoSelecionado === 2) { 
+            tituloFim = "🤫 FINAL SECRETO"; corTitulo = "#b5179e"; nota = "?";
+        } else { 
+            tituloFim = "❌ FINAL RUIM"; corTitulo = "#ff4444"; nota = "C";
+        }
+
+        ctx.fillStyle = corTitulo; ctx.font = "bold 70px sans-serif"; ctx.fillText(tituloFim, canvas.width / 2, canvas.height / 2 - 140);
+        ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("FIM DE JOGO", canvas.width / 2, canvas.height / 2 - 70);
+
+        // --- CAIXA DE ESTATÍSTICAS E NOTA FINAL ---
+        let statY = canvas.height / 2 - 10;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.05)"; ctx.fillRect(canvas.width / 2 - 250, statY, 500, 220);
+        ctx.strokeStyle = corTitulo; ctx.lineWidth = 3; ctx.strokeRect(canvas.width / 2 - 250, statY, 500, 220);
+
+        ctx.fillStyle = "white"; ctx.font = "24px Arial";
+        let acusacaoTxt = suspeitoSelecionado === 0 ? "Sim" : "Não";
+        ctx.fillText(`Tempo restante: ${formatarTempo(tempoRestante)}`, canvas.width / 2, statY + 45);
+        ctx.fillText(`Provas encontradas: ${pistasColetadas} / ${totalPistas}`, canvas.width / 2, statY + 85);
+        ctx.fillText(`Acusação correta: ${acusacaoTxt}`, canvas.width / 2, statY + 125);
+
+        ctx.fillStyle = corTitulo; ctx.font = "bold 34px Arial";
+        ctx.fillText(`Nota de Detetive: ${nota}`, canvas.width / 2, statY + 185);
+
+        ctx.fillStyle = "#64ffda"; ctx.font = "bold 20px sans-serif"; ctx.fillText(">> Atualize a página para jogar novamente <<", canvas.width / 2, statY + 280); 
+        ctx.textAlign = "left"; 
     }
 
     requestAnimationFrame(gameLoop);
