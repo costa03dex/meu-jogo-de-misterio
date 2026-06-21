@@ -4,8 +4,9 @@ document.body.style.margin = "0";
 document.body.style.padding = "0"; 
 document.body.style.overflow = "hidden"; 
 document.body.style.backgroundColor = "#222"; 
+document.body.style.userSelect = "none";
 
-// --- DETECTOR DE CELULAR ---
+// --- FORÇAR EXIBIÇÃO DOS BOTÕES NO MOBILE ---
 let estilo = document.createElement("style");
 estilo.innerHTML = `
     .btn-mobile { display: none; }
@@ -160,7 +161,7 @@ let transicaoFase = 0;
 let suspeitoSelecionado = 0; 
 let suspeitosNomes = ["Rival", "Tião", "Padre", "Seu Zé", "Dona Maria"];
 
-// --- INTRODUÇÃO COMPLETA ---
+// --- INTRODUÇÃO HISTÓRICA COMPLETA ---
 let textosIntro = [
     "Em um dia aparentemente comum na pequena cidade da roça, um grande crime abalou a tranquilidade dos moradores. No alto do morro, na casa mais luxuosa da região, vivia o respeitado presidente Jairo. Entre seus bens mais valiosos estava um relógio de ouro raro, uma relíquia de família passada de geração em geração durante décadas.",
     "Mas, ao amanhecer, uma notícia chocante se espalhou pela cidade: o relógio havia sido roubado!",
@@ -304,7 +305,7 @@ window.addEventListener("keydown", (e) => {
 });
 window.addEventListener("keyup", (e) => keys[e.key] = false);
 
-// --- FUNÇÃO INTEGRADA DE CRIAÇÃO DOS BOTÕES MOBILE ---
+// --- CRIADOR DINÂMICO DE CONTROLES MOBILE ---
 function criarBotaoMobile(txt, left, bottom, right, tamanho, tecla) {
     let btn = document.createElement("div");
     btn.className = "btn-mobile"; 
@@ -315,14 +316,14 @@ function criarBotaoMobile(txt, left, bottom, right, tamanho, tecla) {
     btn.style.bottom = bottom;
     btn.style.width = tamanho;
     btn.style.height = tamanho;
-    btn.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
-    btn.style.border = "3px solid rgba(255, 255, 255, 0.6)";
+    btn.style.backgroundColor = "rgba(0, 0, 0, 0.65)";
+    btn.style.border = "2px solid #64ffda";
     btn.style.borderRadius = "50%";
     btn.style.color = "white";
-    btn.style.display = "none"; 
+    btn.style.display = "flex"; 
     btn.style.alignItems = "center";
     btn.style.justifyContent = "center";
-    btn.style.fontSize = "26px";
+    btn.style.fontSize = "24px";
     btn.style.fontWeight = "bold";
     btn.style.zIndex = "100";
     btn.style.touchAction = "none"; 
@@ -333,32 +334,32 @@ function criarBotaoMobile(txt, left, bottom, right, tamanho, tecla) {
     document.body.appendChild(btn);
 }
 
-// Criando botões mobile direcionais e de ação
-criarBotaoMobile("↑", "90px", "160px", null, "60px", "ArrowUp");
-criarBotaoMobile("↓", "90px", "20px", null, "60px", "ArrowDown");
-criarBotaoMobile("←", "20px", "90px", null, "60px", "ArrowLeft");
-criarBotaoMobile("→", "160px", "90px", null, "60px", "ArrowRight");
-criarBotaoMobile("A", null, "30px", "30px", "80px", " ");
-criarBotaoMobile("1", null, "130px", "120px", "55px", "1");
-criarBotaoMobile("2", null, "130px", "30px", "55px", "2");
+// Renderizando botões direcionais e de ação na tela
+criarBotaoMobile("↑", "85px", "155px", null, "55px", "ArrowUp");
+criarBotaoMobile("↓", "85px", "25px", null, "55px", "ArrowDown");
+criarBotaoMobile("←", "20px", "90px", null, "55px", "ArrowLeft");
+criarBotaoMobile("→", "150px", "90px", null, "55px", "ArrowRight");
+criarBotaoMobile("A", null, "35px", "35px", "75px", " ");
+criarBotaoMobile("1", null, "135px", "125px", "50px", "1");
+criarBotaoMobile("2", null, "135px", "35px", "50px", "2");
 
-// Botão Mobile Exclusivo do Caderno
+// Botão Flutuante do Caderno Retrátil
 let btnCaderno = document.createElement("div");
 btnCaderno.className = "btn-mobile"; 
 btnCaderno.innerText = "📓";
 btnCaderno.style.position = "absolute";
-btnCaderno.style.right = "30px";
+btnCaderno.style.right = "35px";
 btnCaderno.style.top = "85px";
-btnCaderno.style.width = "65px";
-btnCaderno.style.height = "65px";
+btnCaderno.style.width = "60px";
+btnCaderno.style.height = "60px";
 btnCaderno.style.backgroundColor = "rgba(0, 0, 0, 0.75)";
 btnCaderno.style.border = "2px solid #64ffda";
 btnCaderno.style.borderRadius = "12px";
 btnCaderno.style.color = "white";
-btnCaderno.style.display = "none";
+btnCaderno.style.display = "flex";
 btnCaderno.style.alignItems = "center";
 btnCaderno.style.justifyContent = "center";
-btnCaderno.style.fontSize = "28px";
+btnCaderno.style.fontSize = "26px";
 btnCaderno.style.zIndex = "110";
 btnCaderno.addEventListener("touchstart", (e) => { e.preventDefault(); acionarAcao("c"); });
 document.body.appendChild(btnCaderno);
@@ -467,7 +468,7 @@ function draw() {
     for (let npc of npcs) { if (npc.img.complete && npc.img.naturalWidth > 0) ctx.drawImage(npc.img, npc.x, npc.y, npc.w, npc.h); }
     if (detetiveImg.complete && detetiveImg.naturalWidth > 0) ctx.drawImage(detetiveImg, detetive.x, detetive.y, detetive.w, detetive.h);
 
-    // Lanterna
+    // Lanterna Dinâmica
     ctx.save();
     let lanternaCanvas = document.createElement('canvas'); lanternaCanvas.width = canvas.width; lanternaCanvas.height = canvas.height;
     let lCtx = lanternaCanvas.getContext('2d');
@@ -542,7 +543,7 @@ function draw() {
         wrapText(ctx, txtOriginal.substring(0, Math.floor(charIndex)), 190, 625, 1000, 30);
     }
 
-    // --- FINAIS TOTAIS E NOTAS COM SEUS CRÉDITOS PRESERVADOS ---
+    // --- TELA FINAL DE CRÉDITOS ---
     if (estadoJogo === "FIM") {
         ctx.fillStyle = "rgba(10, 15, 30, 0.98)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.textAlign = "center"; 
@@ -578,8 +579,8 @@ function draw() {
         ctx.fillText(`Provas salvas no inventário: ${pistasColetadas} / ${totalPistas}`, canvas.width / 2, 515);
         ctx.fillText(`Acusação certeira: ${nomeAcusado === culpadoVerdadeiro ? "SIM" : "NÃO"}`, canvas.width / 2, 555);
 
-        // SEU NOME PRESERVADO AQUI
-        ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.font = "14px Arial"; ctx.fillText("Desenvolvido por Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 40);
+        // SEU NOME INTEGRADO NOS CRÉDITOS DA ANIMAÇÃO FINAL
+        ctx.fillStyle = "rgba(255,255,255,0.45)"; ctx.font = "16px Arial"; ctx.fillText("Desenvolvido por Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 45);
         ctx.textAlign = "left"; 
     }
 
