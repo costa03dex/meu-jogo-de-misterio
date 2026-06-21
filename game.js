@@ -87,7 +87,10 @@ let locaisPossiveis = [
     { x: 400, y: 500, nomeLocal: "perto da entrada da vila" }
 ];
 let localEscolhido = locaisPossiveis[Math.floor(Math.random() * locaisPossiveis.length)];
-let culpadoVerdadeiro = Math.random() > 0.5 ? "Rival" : "Seu Zé";
+
+// Sistema Dinâmico de Culpados: Agora pode ser o Rival, o Seu Zé ou a Dona Maria!
+let culpadosPossiveis = ["Rival", "Seu Zé", "Dona Maria"];
+let culpadoVerdadeiro = culpadosPossiveis[Math.floor(Math.random() * culpadosPossiveis.length)];
 
 let cadernoAnotacoes = [];
 let inventarioProvas = [];
@@ -110,37 +113,49 @@ let timerJogo = setInterval(() => {
 
 let detetive = { x: 660, y: 350, w: 85, h: 85, speed: 6 };
 
+// --- CONFIGURAÇÃO DOS NPCS COM MATRIZ DE MENTIRAS ---
 let npcs = [
     { 
         nome: "Seu Zé", img: zeImg, x: 250, y: 280, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, 
         pergunta1: "1. Viu algo estranho na noite do roubo?", 
         get resposta1() { 
-            return culpadoVerdadeiro === "Rival" ? "Vi o Rival correndo pra mata com um saco de moedas!" : "Eu estava dormindo na hora, não vi absolutamente nada na vila... (Ele coça a cabeça desviando o olhar)"; 
+            if (culpadoVerdadeiro === "Seu Zé") return "Eu estava dormindo na hora, não vi absolutamente nada na vila... (Ele desvia o olhar gaguejando)"; 
+            if (culpadoVerdadeiro === "Rival") return "Eu vi claramente o Rival rondando a casa do Jairo com uma barra de ferro!";
+            return "Vi uma silhueta alta correndo perto dos trilhos do trem.";
         }, 
-        daPista1: culpadoVerdadeiro === "Rival", 
+        get daPista1() { return culpadoVerdadeiro === "Rival" || culpadoVerdadeiro === "Seu Zé"; }, 
         pergunta2: "2. O que comprou na cidade ontem?", 
         get resposta2() { 
-            return culpadoVerdadeiro === "Seu Zé" ? "Apenas ferramentas velhas... nada de valor! (Sua voz gagueja um pouco)" : "Comprei mantimentos comuns para minha casa."; 
+            if (culpadoVerdadeiro === "Seu Zé") return "Apenas ferramentas velhas... nada de valor! (Sua voz treme)";
+            return "Comprei sementes comuns para o plantio de milho."; 
         }, 
         get daPista2() { return culpadoVerdadeiro === "Seu Zé"; }
     },
     { 
         nome: "Dona Maria", img: mariaImg, x: 1150, y: 550, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, 
         pergunta1: "1. O que encontrou perto da janela?", 
-        resposta1: "Achei uma luva de luxo jogada na janela do Tião. Mas o Tião não tem dinheiro pra comprar isso!", 
+        get resposta1() {
+            if (culpadoVerdadeiro === "Dona Maria") return "Não achei nada! Mas ouvi dizer que o Tião estava muito esquisito ontem...";
+            return "Achei um pedaço de tecido caro jogado perto da janela do Jairo. Alguém rico perdeu aquilo!";
+        },
         daPista1: true, 
         pergunta2: "2. Viu algum movimento estranho?", 
-        resposta2: "Alguém andou passando perto do galinheiro correndo bem na hora que os cães latiram.", 
-        daPista2: false 
+        get resposta2() {
+            if (culpadoVerdadeiro === "Dona Maria") return "Fiquei trancada em casa a noite toda limpando minhas panelas de prata.";
+            return "Alguém andou passando perto do galinheiro correndo bem na hora que os cães latiram.";
+        },
+        get daPista2() { return culpadoVerdadeiro === "Dona Maria"; }
     },
     { 
         nome: "Padre", img: padreImg, x: 1050, y: 250, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, 
         pergunta1: "1. Onde o Tião estava no horário do crime?", 
-        resposta1: "O Tião estava comigo na paróquia até tarde, limpando o salão principal. Ele é inocente.", 
+        resposta1: "O Tião estava comigo na paróquia até tarde, limpando o salão principal. Ele é 100% inocente.", 
         daPista1: true, 
         pergunta2: "2. Tem alguma suspeita?", 
         get resposta2() { 
-            return culpadoVerdadeiro === "Seu Zé" ? "O Seu Zé veio me perguntar repentinamente sobre como derreter relíquias de metal há poucos dias..." : "O Rival comprou ferramentas pesadas parecidas com as usadas na fechadura."; 
+            if (culpadoVerdadeiro === "Seu Zé") return "O Seu Zé veio me perguntar repentinamente sobre como derreter relíquias de ouro puro há poucos dias..."; 
+            if (culpadoVerdadeiro === "Dona Maria") return "A Dona Maria demonstrou um interesse repentino pelo valor de mercado de antiguidades.";
+            return "O Rival comprou ferramentas pesadas parecidas com as usadas na fechadura arrombada."; 
         }, 
         daPista2: true 
     },
@@ -150,7 +165,7 @@ let npcs = [
         resposta1: "Estão tentando me armar uma cilada das grandes! Eu nunca faria isso com o Jairo.", 
         daPista1: false, 
         pergunta2: "2. Quem faria isso?", 
-        resposta2: "Alguém maldoso que quer me expulsar daqui para assumir minhas terras.", 
+        resposta2: "Alguém maldoso que quer me expulsar daqui para assumir minhas terras de herança.", 
         daPista2: false 
     },
     { nome: "Rival", img: rivalImg, x: 150, y: 550, w: 85, h: 85, tipo: "rival" }
@@ -161,12 +176,12 @@ let transicaoFase = 0;
 let suspeitoSelecionado = 0; 
 let suspeitosNomes = ["Rival", "Tião", "Padre", "Seu Zé", "Dona Maria"];
 
-// --- INTRODUÇÃO HISTÓRICA COMPLETA ---
+// --- INTRODUÇÃO HISTÓRICA ---
 let textosIntro = [
     "Em um dia aparentemente comum na pequena cidade da roça, um grande crime abalou a tranquilidade dos moradores. No alto do morro, na casa mais luxuosa da região, vivia o respeitado presidente Jairo. Entre seus bens mais valiosos estava um relógio de ouro raro, uma relíquia de família passada de geração em geração durante décadas.",
     "Mas, ao amanhecer, uma notícia chocante se espalhou pela cidade: o relógio havia sido roubado!",
     "O desaparecimento da preciosa herança gerou medo, dúvidas e muitas suspeitas. Entre os moradores, um nome logo começou a ser comentado: Tião. Mas será que ele é realmente o culpado ou está sendo acusado injustamente?",
-    "Diante desse mistério, precisamos da ajuda do melhor detetive da região. E esse detetive é você!",
+    "Diante desse misterério, precisamos da ajuda do melhor detetive da região. E esse detetive é você!",
     "Sua missão será investigar as pistas, interrogar os suspeitos, descobrir o verdadeiro ladrão e, acima de tudo, provar se Tião é culpado ou inocente.",
     "Boa sorte, detetive. O trem parte em 3 minutos! Solucione o caso antes que o culpado fuja."
 ];
@@ -284,15 +299,13 @@ function acionarAcao(tecla) {
         if (tecla === "1") {
             somClick.play().catch(() => {});
             textoResposta = npcFoco.resposta1; charIndex = 0;
-            let valendoPista = (npcFoco.nome === "Seu Zé" && culpadoVerdadeiro === "Rival") || (npcFoco.nome !== "Seu Zé" && npcFoco.daPista1);
-            if (valendoPista && !npcFoco.pistaColetada) { pistasColetadas++; npcFoco.pistaColetada = true; }
+            if (!npcFoco.pistaColetada) { pistasColetadas++; npcFoco.pistaColetada = true; }
             registrarAnotacao("Depoimento de " + npcFoco.nome, npcFoco.nome + ": " + npcFoco.resposta1);
         }
         if (tecla === "2") {
             somClick.play().catch(() => {});
             textoResposta = npcFoco.resposta2; charIndex = 0;
-            let valendoPista = (npcFoco.nome === "Seu Zé" && culpadoVerdadeiro === "Seu Zé") || (npcFoco.nome !== "Seu Zé" && npcFoco.daPista2);
-            if (valendoPista && !npcFoco.pistaColetada) { pistasColetadas++; npcFoco.pistaColetada = true; }
+            if (!npcFoco.pistaColetada) { pistasColetadas++; npcFoco.pistaColetada = true; }
             registrarAnotacao("Testemunho de " + npcFoco.nome, npcFoco.nome + ": " + npcFoco.resposta2);
         }
     }
@@ -305,7 +318,7 @@ window.addEventListener("keydown", (e) => {
 });
 window.addEventListener("keyup", (e) => keys[e.key] = false);
 
-// --- CRIADOR DINÂMICO DE CONTROLES MOBILE ---
+// --- CONTROLES MOBILE INTEGRADOS ---
 function criarBotaoMobile(txt, left, bottom, right, tamanho, tecla) {
     let btn = document.createElement("div");
     btn.className = "btn-mobile"; 
@@ -334,7 +347,6 @@ function criarBotaoMobile(txt, left, bottom, right, tamanho, tecla) {
     document.body.appendChild(btn);
 }
 
-// Renderizando botões direcionais e de ação na tela
 criarBotaoMobile("↑", "85px", "155px", null, "55px", "ArrowUp");
 criarBotaoMobile("↓", "85px", "25px", null, "55px", "ArrowDown");
 criarBotaoMobile("←", "20px", "90px", null, "55px", "ArrowLeft");
@@ -343,7 +355,6 @@ criarBotaoMobile("A", null, "35px", "35px", "75px", " ");
 criarBotaoMobile("1", null, "135px", "125px", "50px", "1");
 criarBotaoMobile("2", null, "135px", "35px", "50px", "2");
 
-// Botão Flutuante do Caderno Retrátil
 let btnCaderno = document.createElement("div");
 btnCaderno.className = "btn-mobile"; 
 btnCaderno.innerText = "📓";
@@ -406,6 +417,7 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // --- INTRODUÇÃO ---
     if (estadoJogo === "INTRO" || estadoJogo === "TRANSICAO_FINAL") {
         ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "26px Arial";
@@ -414,6 +426,8 @@ function draw() {
         wrapText(ctx, txtOriginal.substring(0, Math.floor(charIndex)), canvas.width / 2, canvas.height / 2 - 80, 1050, 40);
         ctx.fillStyle = "#64ffda"; ctx.font = "20px Arial";
         ctx.fillText("[ Aperte A (ou ESPAÇO) para avançar ]", canvas.width / 2, canvas.height - 80);
+        
+        desenharRodapeFixo();
         ctx.textAlign = "left"; requestAnimationFrame(gameLoop); return; 
     }
 
@@ -423,10 +437,10 @@ function draw() {
         ctx.fillText("PRONTO PARA O VEREDITO?", canvas.width / 2, 120);
         ctx.fillStyle = "white"; ctx.font = "24px Arial";
         ctx.fillText(`Provas listadas na maleta: ${pistasColetadas} / ${totalPistas}`, canvas.width / 2, 220);
-        ctx.fillStyle = "#94a3b8"; ctx.font = "20px Arial";
-        ctx.fillText("Dica: Analise bem os depoimentos no caderno antes de confrontar a vila.", canvas.width / 2, 300);
         ctx.fillStyle = "#64ffda"; ctx.font = "bold 24px Arial";
         ctx.fillText("[ Aperte A ou ESPAÇO para ir ao Confronto Final ]", canvas.width / 2, canvas.height - 150);
+        
+        desenharRodapeFixo();
         ctx.textAlign = "left"; requestAnimationFrame(gameLoop); return;
     }
 
@@ -434,8 +448,8 @@ function draw() {
         ctx.fillStyle = "rgba(10, 0, 0, 0.98)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "#ff4444"; ctx.textAlign = "center"; ctx.font = "bold 70px sans-serif";
         ctx.fillText("⏳ O TREM PARTIU!", canvas.width / 2, canvas.height / 2 - 30);
-        ctx.fillStyle = "white"; ctx.font = "26px sans-serif";
-        ctx.fillText("Você demorou demais coletando fatos e o verdadeiro culpado escapou com a relíquia.", canvas.width / 2, canvas.height / 2 + 30);
+        
+        desenharRodapeFixo();
         ctx.textAlign = "left"; requestAnimationFrame(gameLoop); return;
     }
 
@@ -451,9 +465,8 @@ function draw() {
             ctx.fillText("QUEM É O VERDADEIRO LADRÃO?", canvas.width / 2, 100);
             ctx.fillStyle = "#ffe600"; ctx.font = "bold 32px Arial";
             ctx.fillText("Acusar formalmente: " + suspeitosNomes[suspeitoSelecionado], canvas.width / 2, startY + imgH + 60);
-            ctx.fillStyle = "#64ffda"; ctx.font = "22px Arial";
-            ctx.fillText("Use SETAS para mover o foco e ESPAÇO/A para trancar a cela", canvas.width / 2, startY + imgH + 110);
         }
+        desenharRodapeFixo();
         ctx.textAlign = "left"; requestAnimationFrame(gameLoop); return;
     }
 
@@ -465,14 +478,46 @@ function draw() {
             ctx.fillStyle = "black"; ctx.font = "bold 24px Arial"; ctx.fillText("?", item.x + 13, item.y + 28);
         }
     }
-    for (let npc of npcs) { if (npc.img.complete && npc.img.naturalWidth > 0) ctx.drawImage(npc.img, npc.x, npc.y, npc.w, npc.h); }
+    
+    // --- DESENHAR SINAIS EM CIMA DOS NPCS ---
+    for (let npc of npcs) { 
+        if (npc.img.complete && npc.img.naturalWidth > 0) {
+            ctx.drawImage(npc.img, npc.x, npc.y, npc.w, npc.h);
+            
+            // Exclamação amarela se tem pista pendente, check verde se já falou
+            if (npc.tipo !== "rival") {
+                ctx.font = "bold 26px Arial";
+                if (!npc.pistaColetada) {
+                    ctx.fillStyle = "#ffe600";
+                    ctx.fillText("❗", npc.x + npc.w / 2 - 8, npc.y - 15);
+                } else {
+                    ctx.fillStyle = "#00ffcc";
+                    ctx.fillText("✓", npc.x + npc.w / 2 - 8, npc.y - 15);
+                }
+            }
+        } 
+    }
+    
     if (detetiveImg.complete && detetiveImg.naturalWidth > 0) ctx.drawImage(detetiveImg, detetive.x, detetive.y, detetive.w, detetive.h);
+
+    // --- ADICIONAR "APERTE A/ESPAÇO PARA CONVERSAR" ---
+    let hitboxInteracao = { x: detetive.x - 25, y: detetive.y - 25, w: detetive.w + 50, h: detetive.h + 50 };
+    let pertoAlguem = npcs.find(n => colidindo(hitboxInteracao, n));
+    if (pertoAlguem && estadoJogo === "EXPLORANDO") {
+        ctx.fillStyle = "rgba(0,0,0,0.8)";
+        ctx.fillRect(detetive.x - 30, detetive.y - 60, 150, 30);
+        ctx.strokeStyle = "#64ffda";
+        ctx.strokeRect(detetive.x - 30, detetive.y - 60, 150, 30);
+        ctx.fillStyle = "white";
+        ctx.font = "bold 12px Arial";
+        ctx.fillText("[A/Espaço] Conversar", detetive.x - 18, detetive.y - 40);
+    }
 
     // Lanterna Dinâmica
     ctx.save();
     let lanternaCanvas = document.createElement('canvas'); lanternaCanvas.width = canvas.width; lanternaCanvas.height = canvas.height;
     let lCtx = lanternaCanvas.getContext('2d');
-    lCtx.fillStyle = tempoRestante <= 30 ? "rgba(139, 0, 0, 0.82)" : "rgba(0, 0, 0, 0.75)";
+    lCtx.fillStyle = "rgba(0, 0, 0, 0.75)";
     lCtx.fillRect(0, 0, canvas.width, canvas.height);
     lCtx.globalCompositeOperation = 'destination-out';
     let centroX = detetive.x + detetive.w / 2; let centroY = detetive.y + detetive.h / 2;
@@ -488,20 +533,13 @@ function draw() {
     ctx.fillText("🔎 Provas: " + pistasColetadas + " / " + totalPistas, 40, 48);
 
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(225, 20, 460, 45);
-    ctx.strokeStyle = "#ffe600"; ctx.strokeRect(225, 20, 460, 45);
     ctx.fillStyle = "white"; ctx.font = "12px sans-serif";
     let textoInv = inventarioProvas.length > 0 ? inventarioProvas.join("  ") : "Mochila sem itens";
     ctx.fillText(textoInv, 240, 46);
 
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(canvas.width - 200, 20, 160, 45);
-    ctx.fillStyle = tempoRestante <= 30 ? "#ff4444" : "#64ffda"; ctx.font = "bold 18px Arial";
+    ctx.fillStyle = "#64ffda"; ctx.font = "bold 18px Arial";
     ctx.fillText("⏳ Faltam: " + formatarTempo(tempoRestante), canvas.width - 180, 48);
-
-    if (estadoJogo === "EXPLORANDO") {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.6)"; ctx.fillRect(canvas.width - 390, 20, 175, 45);
-        ctx.fillStyle = "white"; ctx.font = "12px sans-serif";
-        ctx.fillText("Aperte C para ver Caderno", canvas.width - 375, 46);
-    }
 
     if (cadernoAberto && estadoJogo === "EXPLORANDO") {
         ctx.fillStyle = "rgba(15, 23, 42, 0.98)"; ctx.fillRect(454, 150, 500, 380);
@@ -509,16 +547,10 @@ function draw() {
         ctx.fillStyle = "#ffe600"; ctx.font = "bold 22px Arial"; ctx.fillText("📓 CADERNO DE ANOTAÇÕES DO CASO:", 484, 195);
         ctx.fillStyle = "white"; ctx.font = "14px Arial";
         let posY = 245;
-        if (cadernoAnotacoes.length === 0) {
-            ctx.fillStyle = "#94a3b8"; ctx.fillText("Nenhuma pista registrada. Fale com os moradores.", 484, 250);
-        } else {
-            for (let i = 0; i < cadernoAnotacoes.length; i++) {
-                wrapText(ctx, "• " + cadernoAnotacoes[i], 484, posY, 440, 22);
-                posY += 55;
-            }
+        for (let i = 0; i < cadernoAnotacoes.length; i++) {
+            wrapText(ctx, "• " + cadernoAnotacoes[i], 484, posY, 440, 22);
+            posY += 55;
         }
-        ctx.fillStyle = "#64ffda"; ctx.font = "12px Arial";
-        ctx.fillText("[ Aperte C ou toque em 📓 para fechar ]", 590, 500);
     }
 
     if (estadoJogo === "DIALOGO") {
@@ -543,7 +575,7 @@ function draw() {
         wrapText(ctx, txtOriginal.substring(0, Math.floor(charIndex)), 190, 625, 1000, 30);
     }
 
-    // --- TELA FINAL DE CRÉDITOS ---
+    // --- TELA DO VEREDITO ALTERADA ---
     if (estadoJogo === "FIM") {
         ctx.fillStyle = "rgba(10, 15, 30, 0.98)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.textAlign = "center"; 
@@ -557,14 +589,17 @@ function draw() {
         } else if (nomeAcusado === culpadoVerdadeiro) {
             if (culpadoVerdadeiro === "Rival") {
                 tipoFinal = "🏆 FINAL VERDADEIRO: O MESTRE DOS FATOS"; nota = "A";
-                mensagemFinal = "Voz da justiça! Confrontado com o lenço de luxo e as contradições coletadas com a Dona Maria, o Rival confessou ter pulado a janela para sabotar o Tião e reaver as terras.";
-            } else {
+                mensagemFinal = "Voz da justiça! Confrontado com o lenço de luxo e as contradições coletadas com a Dona Maria, o Rival confessou ter pulado a janela para sabotar o Tião e reaver as terras agrárias.";
+            } else if (culpadoVerdadeiro === "Seu Zé") {
                 tipoFinal = "🌟 FINAL SECRETO: COMPLOT DESMASCARADO"; nota = "S";
-                mensagemFinal = "Sensacional! Você percebeu que as marcas levavam ao celeiro do Seu Zé. Ele mentiu sobre estar dormindo e plantou as joias para incriminar o Rival devido a velhas dívidas agrárias.";
+                mensagemFinal = "Sensacional! Você percebeu que as marcas levavam ao celeiro do Seu Zé. Ele mentiu sobre estar dormindo e plantou as joias para incriminar o Tião devido a velhas dívidas agrárias.";
+            } else {
+                tipoFinal = "🔍 FINAL: RIQUEZA CLANDESTINA"; nota = "A";
+                mensagemFinal = "Incrível! Você notou a mentira da Dona Maria ao dizer que limpava suas pratas. Ela havia pegado o relógio do presidente Jairo para derreter e vender clandestinamente na cidade.";
             }
         } else {
             tipoFinal = "❌ FINAL RUIM: ERRO JUDICIÁRIO DEVASTADOR"; nota = "D";
-            mensagemFinal = `Que fiasco! O inocente ${nomeAcusado} foi mandado para a prisão estadual. Enquanto a vila lamenta o veredito injusto, o verdadeiro culpado (${culpadoVerdadeiro}) pegou o trem das 18h rindo de suas deduções.`;
+            mensagemFinal = `Que fiasco! O inocente ${nomeAcusado} foi mandado para a prisão. Enquanto a vila lamenta o veredito injusto, o verdadeiro culpado (${culpadoVerdadeiro}) pegou o trem das 18h rindo de suas deduções.`;
         }
 
         ctx.fillStyle = "#ffe600"; ctx.font = "bold 42px sans-serif"; ctx.fillText(tipoFinal, canvas.width / 2, 140);
@@ -575,16 +610,24 @@ function draw() {
         
         ctx.fillStyle = "#64ffda"; ctx.font = "bold 26px Arial"; ctx.fillText(`⭐ NOTA DE DETETIVE: ${nota}`, canvas.width / 2, 425);
         ctx.fillStyle = "white"; ctx.font = "18px Arial";
-        ctx.fillText(`Tempo restante de busca: ${formatarTempo(tempoRestante)}`, canvas.width / 2, 475);
-        ctx.fillText(`Provas salvas no inventário: ${pistasColetadas} / ${totalPistas}`, canvas.width / 2, 515);
-        ctx.fillText(`Acusação certeira: ${nomeAcusado === culpadoVerdadeiro ? "SIM" : "NÃO"}`, canvas.width / 2, 555);
-
-        // SEU NOME INTEGRADO NOS CRÉDITOS DA ANIMAÇÃO FINAL
-        ctx.fillStyle = "rgba(255,255,255,0.45)"; ctx.font = "16px Arial"; ctx.fillText("Desenvolvido por Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 45);
-        ctx.textAlign = "left"; 
+        ctx.fillText(`Provas salvas no inventário: ${pistasColetadas} / ${totalPistas}`, canvas.width / 2, 495);
+        ctx.fillText(`Acusação certeira: ${nomeAcusado === culpadoVerdadeiro ? "SIM" : "NÃO"}`, canvas.width / 2, 545);
     }
 
+    desenharRodapeFixo();
     requestAnimationFrame(gameLoop);
+}
+
+// --- FUNÇÃO DO RODAPÉ FIXO COMPARTILHADO ---
+function desenharRodapeFixo() {
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+    ctx.fillRect(0, canvas.height - 35, canvas.width, 35);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+    ctx.font = "bold 14px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Jogo desenvolvido por: Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 12);
+    ctx.restore();
 }
 
 function gameLoop() { update(); draw(); }
