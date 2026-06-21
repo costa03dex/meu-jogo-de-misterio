@@ -85,12 +85,13 @@ let timerJogo = setInterval(() => {
 // --- PERSONAGENS ---
 let detetive = { x: 660, y: 350, w: 85, h: 85, speed: 6 };
 
+// O Rival agora tem opções normais de diálogo para você poder encerrar o jogo sem ter as provas
 let npcs = [
     { nome: "Seu Zé", img: zeImg, x: 250, y: 280, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. Viu algo estranho na noite do roubo?", resposta1: "Vi o Rival correndo pra mata com um saco de moedas!", daPista1: true, pergunta2: "2. Como é o Tião?", resposta2: "Tião é trabalhador, nunca roubou.", daPista2: false },
     { nome: "Dona Maria", img: mariaImg, x: 1150, y: 550, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. O que encontrou na casa do Tião?", resposta1: "Achei uma luva de luxo perto da janela do Tião. Ele não tem dinheiro pra isso.", daPista1: true, pergunta2: "2. Tião tem inimigos?", resposta2: "Apenas o Rival. Brigaram por terras.", daPista2: false },
     { nome: "Padre", img: padreImg, x: 1050, y: 250, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. O que o Tião fazia na hora do crime?", resposta1: "Ele estava comigo na igreja, ajudando a limpar.", daPista1: false, pergunta2: "2. O Rival tem se confessado?", resposta2: "Sim, confessou um plano terrível contra o Tião na semana passada.", daPista2: true },
     { nome: "Tião", img: tiaoImg, x: 660, y: 600, w: 85, h: 85, tipo: "aliado", pistaColetada: false, pergunta1: "1. Fique calmo, vou te tirar dessa.", resposta1: "Obrigado, detetive! Confio na sua investigação.", daPista1: false, pergunta2: "2. Quem te incriminou?", resposta2: "Só pode ser o engravatado do Rival!", daPista2: false },
-    { nome: "Rival", img: rivalImg, x: 150, y: 550, w: 85, h: 85, tipo: "rival", pistaColetada: false, pergunta1: "1. ACUSAÇÃO FINAL (Encerrar investigação)", resposta1: "", daPista1: false, pergunta2: "2. Ainda estou investigando (Sair)", resposta2: "Não me faça perder tempo com suas acusações infundadas!", daPista2: false }
+    { nome: "Rival", img: rivalImg, x: 150, y: 550, w: 85, h: 85, tipo: "rival", pistaColetada: false, pergunta1: "1. ESTOU PRONTO PARA ACUSAR ALGUÉM", resposta1: "", daPista1: false, pergunta2: "2. Ainda estou investigando (Sair)", resposta2: "Então não me faça perder tempo com suas presenças insolentes!", daPista2: false }
 ];
 
 let itensCenario = [
@@ -196,18 +197,22 @@ function acionarAcao(tecla) {
         }
     }
 
+    // INTERAÇÃO COM OPÇÕES (BOTÃO 1 OU 2)
     if (estadoJogo === "DIALOGO" && textoResposta === "" && npcFoco && npcFoco.tipo !== "sistema") {
         if (tecla === "1") {
             somClick.play();
             if (npcFoco.tipo === "rival") {
+                // OPÇÃO 1 DO RIVAL: ENCERRA O JOGO E VAI PROS FINAIS
                 estadoJogo = "RIVAL_DIALOGO"; falaRival = 0; charIndex = 0;
             } else {
+                // TESTEMUNHAS E ALIADOS: Dão a pista normalmente
                 textoResposta = npcFoco.resposta1; charIndex = 0;
                 if (npcFoco.daPista1 && !npcFoco.pistaColetada) { pistasColetadas++; npcFoco.pistaColetada = true; }
             }
         }
         if (tecla === "2") {
             somClick.play();
+            // OPÇÃO 2 PARA QUALQUER NPC
             textoResposta = npcFoco.resposta2; charIndex = 0;
             if (npcFoco.daPista2 && !npcFoco.pistaColetada) { pistasColetadas++; npcFoco.pistaColetada = true; }
         }
@@ -301,7 +306,6 @@ function update() {
             somPassos.pause();
         }
 
-        // Movimento livre de colisões com o cenário ou npcs
         if (keys["ArrowUp"]) detetive.y -= detetive.speed;
         if (keys["ArrowDown"]) detetive.y += detetive.speed;
         if (keys["ArrowLeft"]) detetive.x -= detetive.speed;
@@ -464,7 +468,7 @@ function draw() {
     ctx.fillStyle = corTempo; ctx.font = "bold 20px Arial";
     ctx.fillText("⏳ Tempo: " + formatarTempo(tempoRestante), canvas.width - 200, 48);
 
-    // Diálogos
+    // Diálogos Gerais
     if (estadoJogo === "DIALOGO") {
         ctx.fillStyle = "rgba(15, 23, 42, 0.95)"; ctx.fillRect(154, 540, 1100, 180);
         ctx.strokeStyle = npcFoco.tipo === "sistema" ? "#ffe600" : "#64ffda"; ctx.lineWidth = 4; ctx.strokeRect(154, 540, 1100, 180);
@@ -480,11 +484,13 @@ function draw() {
             }
         } else if (npcFoco.tipo !== "sistema") {
             ctx.fillStyle = "#e2e8f0"; ctx.fillText("Escolha o que perguntar (botões 1 ou 2):", 190, 625);
-            ctx.fillStyle = "#64ffda"; ctx.fillText(npcFoco.pergunta1, 210, 665); ctx.fillText(npcFoco.pergunta2, 210, 695);
+            ctx.fillStyle = npcFoco.tipo === "rival" ? "#ff4444" : "#64ffda"; 
+            ctx.fillText(npcFoco.pergunta1, 210, 665); 
+            ctx.fillText(npcFoco.pergunta2, 210, 695);
         }
     }
 
-    // Diálogo do Rival
+    // Diálogo Exclusivo do Rival (Transição para Final)
     if (estadoJogo === "RIVAL_DIALOGO") {
         ctx.fillStyle = "rgba(15, 23, 42, 0.95)"; ctx.fillRect(154, 540, 1100, 180);
         ctx.strokeStyle = "#ff4444"; ctx.lineWidth = 4; ctx.strokeRect(154, 540, 1100, 180);
@@ -500,27 +506,28 @@ function draw() {
         }
     }
 
+    // TELA DE FINAIS (LÓGICA DOS 4 FINAIS)
     if (estadoJogo === "FIM") {
         ctx.fillStyle = "rgba(0, 15, 5, 0.95)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.textAlign = "center"; 
         
         if (suspeitoSelecionado === 0 && pistasColetadas >= totalPistas) { 
-            // Final Verdadeiro
+            // FINAL VERDADEIRO: Acusou o Rival (0) COM as 4 provas
             ctx.fillStyle = "#ffe600"; ctx.font = "bold 65px sans-serif"; ctx.fillText("🏆 FINAL VERDADEIRO", canvas.width / 2, canvas.height / 2 - 40);
             ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Com todas as provas em mãos, você expôs as mentiras do Rival!", canvas.width / 2, canvas.height / 2 + 20);
             ctx.fillText("Sem ter como escapar, ele confessou o crime. Tião foi inocentado!", canvas.width / 2, canvas.height / 2 + 60);
         } else if (suspeitoSelecionado === 0 && pistasColetadas < totalPistas) {
-            // Final Neutro
+            // FINAL NEUTRO: Acusou o Rival (0) SEM as 4 provas
             ctx.fillStyle = "#a8a8a8"; ctx.font = "bold 65px sans-serif"; ctx.fillText("⚖️ FINAL NEUTRO", canvas.width / 2, canvas.height / 2 - 40);
-            ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você deduziu que o Rival era o culpado, mas acusou sem reunir as provas.", canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você deduziu que o Rival era o culpado, mas acusou sem reunir todas as provas.", canvas.width / 2, canvas.height / 2 + 20);
             ctx.fillText("Os advogados dele o livraram com facilidade e o caso foi encerrado sem prisões.", canvas.width / 2, canvas.height / 2 + 60);
         } else if (suspeitoSelecionado === 2) {
-            // Final Secreto (O Padre)
+            // FINAL SECRETO: Acusou o Padre (2)
             ctx.fillStyle = "#b5179e"; ctx.font = "bold 65px sans-serif"; ctx.fillText("🤫 FINAL SECRETO", canvas.width / 2, canvas.height / 2 - 40);
             ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você apontou para o Padre! Todos ficaram em choque com a acusação...", canvas.width / 2, canvas.height / 2 + 20);
             ctx.fillText("Chorando, ele confessou que roubou o relógio para pagar as dívidas da igreja!", canvas.width / 2, canvas.height / 2 + 60);
         } else {
-            // Final Ruim (Inocente)
+            // FINAL RUIM: Acusou Tião (1), Seu Zé (3) ou Dona Maria (4)
             ctx.fillStyle = "#ff4444"; ctx.font = "bold 65px sans-serif"; ctx.fillText("❌ FINAL RUIM", canvas.width / 2, canvas.height / 2 - 40);
             ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você acusou " + suspeitosNomes[suspeitoSelecionado] + ", que não cometeu o crime!", canvas.width / 2, canvas.height / 2 + 20);
             ctx.fillText("Enquanto um inocente foi preso, o verdadeiro culpado fugiu com a relíquia...", canvas.width / 2, canvas.height / 2 + 60);
