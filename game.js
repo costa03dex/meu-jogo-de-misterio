@@ -1,12 +1,12 @@
-// Limpa a tela antiga
+// Limpa a tela antiga para evitar duplicatas
 document.body.innerHTML = "";
 
-// Cria o título
+// Cria o título do jogo
 let titulo = document.createElement("h2");
 titulo.innerText = "🕵️ Mistério na Vila: O Confronto Final";
 titulo.style.fontFamily = "sans-serif";
 titulo.style.textAlign = "center";
-titulo.style.color = "#333";
+titulo.style.color = "#fff"; // Mudei para branco para destacar
 document.body.appendChild(titulo);
 
 // --- CONFIGURAÇÃO DA TELA (1304 x 668) ---
@@ -28,6 +28,7 @@ function carregarImagem(src) {
     return img;
 }
 
+// Os nomes aqui precisam bater EXATAMENTE com o seu GitHub (já estão certos)
 let mapaImg = carregarImagem("mapa.png");
 let detetiveImg = carregarImagem("detetive.png");
 let zeImg = carregarImagem("ze.png");
@@ -59,20 +60,23 @@ let npcs = [
 let mensagemAtual = "";
 let keys = {};
 
+// Controles do teclado
 window.addEventListener("keydown", (e) => keys[e.key] = true);
 window.addEventListener("keyup", (e) => keys[e.key] = false);
 
+// Checa se um personagem encostou no outro
 function colidindo(r1, r2) {
     return (r1.x < r2.x + r2.w && r1.x + r1.width > r2.x && r1.y < r2.y + r2.h && r1.y + r1.height > r2.y);
 }
 
+// Atualiza a posição e as regras do jogo
 function update() {
     if (keys["ArrowUp"]) detetive.y -= detetive.speed;
     if (keys["ArrowDown"]) detetive.y += detetive.speed;
     if (keys["ArrowLeft"]) detetive.x -= detetive.speed;
     if (keys["ArrowRight"]) detetive.x += detetive.speed;
 
-    // Limites da tela
+    // Impede de sair da tela
     if (detetive.x < 0) detetive.x = 0;
     if (detetive.y < 0) detetive.y = 0;
     if (detetive.x + detetive.width > canvas.width) detetive.x = canvas.width - detetive.width;
@@ -80,6 +84,7 @@ function update() {
 
     mensagemAtual = "";
 
+    // Checa conversas e pistas
     for (let npc of npcs) {
         if (colidindo(detetive, npc)) {
             if (npc.tipo === "rival") {
@@ -99,24 +104,26 @@ function update() {
     }
 }
 
+// Desenha tudo na tela
 function draw() {
-    // 1. Desenha o Mapa ocupando toda a tela 1304x668
+    // 1. Mapa
     ctx.drawImage(mapaImg, 0, 0, canvas.width, canvas.height);
 
-    // 2. Desenha NPCs
+    // 2. NPCs (Personagens)
     for (let npc of npcs) {
         ctx.drawImage(npc.img, npc.x, npc.y, npc.w, npc.h);
+        // Desenha a exclamação se tiver pista não coletada
         if (npc.temPista && !npc.deuPista) {
             ctx.fillStyle = "yellow";
-            ctx.font = "bold 25px Arial";
-            ctx.fillText("?", npc.x + 20, npc.y - 10);
+            ctx.font = "bold 30px Arial";
+            ctx.fillText("!", npc.x + 25, npc.y - 10);
         }
     }
 
-    // 3. Desenha Detetive
+    // 3. Detetive
     ctx.drawImage(detetiveImg, detetive.x, detetive.y, detetive.width, detetive.height);
 
-    // 4. UI de Pistas
+    // 4. Interface (UI) de Pistas
     ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
     ctx.fillRect(20, 20, 220, 50);
     ctx.fillStyle = "#64ffda";
@@ -138,11 +145,11 @@ function draw() {
     requestAnimationFrame(gameLoop);
 }
 
+// Roda o jogo sem parar
 function gameLoop() {
     update();
     draw();
 }
 
+// Só começa quando o mapa carregar
 mapaImg.onload = () => gameLoop();
-
-A sua apresentação técnica e o código v2.0 estão prontos! Agora o mapa preenche toda a tela, o sistema de pistas está funcionando e você já pode confrontar o Rival para inocentar o Tião. Divirta-se jogando!
