@@ -5,7 +5,7 @@ document.body.style.padding = "0";
 document.body.style.overflow = "hidden"; 
 document.body.style.backgroundColor = "#222"; 
 
-// --- DETECTOR DE CELULAR (Esconde botões no PC) ---
+// --- DETECTOR DE CELULAR ---
 let estilo = document.createElement("style");
 estilo.innerHTML = `
     .btn-mobile { display: none; }
@@ -57,13 +57,20 @@ let mariaImg = carregarImagem("maria.png");
 let padreImg = carregarImagem("padre.png");
 let tiaoImg = carregarImagem("tiao.png");
 let rivalImg = carregarImagem("rival.png");
+let inteImg = carregarImagem("inte.png"); // IMAGEM DO JULGAMENTO
 
 // --- VARIÁVEIS DE ESTADO E HISTÓRIA ---
-let estadoJogo = "INTRO"; // O jogo agora começa na tela de introdução!
+let estadoJogo = "INTRO"; 
 let npcFoco = null; 
 let textoResposta = ""; 
 let pistasColetadas = 0;
 let totalPistas = 3;
+
+// Variáveis para a Acusação Final
+let falaRival = 0;
+let transicaoFase = 0;
+let suspeitoSelecionado = 0; // 0 a 4 (Rival, Tião, Padre, Zé, Maria)
+let suspeitosNomes = ["Rival", "Tião", "Padre", "Seu Zé", "Dona Maria"];
 
 // Textos da Introdução
 let textosIntro = [
@@ -75,6 +82,24 @@ let textosIntro = [
     "Boa sorte, detetive. Toda a cidade confia em você para solucionar este caso!"
 ];
 let introFase = 0;
+
+// Textos do Rival
+let textosRival = [
+    "Detetive, tenha dó de mim! Sou um homem muito respeitado e prestigiado nesta cidade. Passei minha vida inteira trabalhando honestamente e conquistando a confiança de todos os moradores.",
+    "Mas, nos últimos dias, o presidente Jairo se voltou contra mim. Não sei o motivo, mas ele passou a me tratar com desconfiança. Agora, depois do roubo do relógio de ouro, muitos estão apontando o dedo para mim.",
+    "Eu juro pela minha honra: jamais faria uma coisa dessas com ele. Posso ter minhas diferenças com o presidente Jairo, mas nunca roubarei ninguém, muito menos uma relíquia tão importante para sua família.",
+    "Peço apenas que investigue os fatos antes de me julgar. Encontre o verdadeiro culpado e prove minha inocência."
+];
+
+// Textos da Transição Final
+let textosTransicao = [
+    "E agora, detetive? Todos os envolvidos parecem esconder algum segredo. A cada depoimento, novas contradições surgem, e cada pista encontrada levanta ainda mais dúvidas.",
+    "Algumas provas apontam para um suspeito, enquanto outras parecem inocentá-lo. Em quem confiar? Quem está dizendo a verdade e quem está tentando enganá-lo?",
+    "Por trás dos sorrisos amigáveis e das histórias bem ensaiadas, pode estar escondido o verdadeiro responsável pelo roubo do relógio de ouro. Mas cuidado: nem tudo é o que parece.",
+    "Nesta cidade, cada morador tem algo a esconder, e alguns segredos podem ser mais perigosos do que o próprio crime.",
+    "Sua missão não será apenas encontrar o ladrão, mas também separar fatos de mentiras, descobrir quais provas são verdadeiras e revelar os segredos que todos tentam manter enterrados.",
+    "Analise cada detalhe, questione cada suspeito e siga as pistas com atenção. Somente assim você poderá responder à pergunta que atormenta toda a cidade:\n\nQuem roubou o relógio de ouro do presidente Jairo?"
+];
 
 let detetive = { x: 660, y: 350, w: 85, h: 85, speed: 6 };
 
@@ -89,39 +114,75 @@ let npcs = [
 let keys = {};
 
 function acionarAcao(tecla) {
-    // Avança a introdução
+    // Tela 1: INTRODUÇÃO
     if (estadoJogo === "INTRO") {
         if (tecla === " ") {
             introFase++;
-            if (introFase >= textosIntro.length) {
-                estadoJogo = "EXPLORANDO"; // Começa o jogo de verdade!
-            }
+            if (introFase >= textosIntro.length) estadoJogo = "EXPLORANDO";
         }
-        return; // Impede que o espaço ative outras coisas durante a intro
+        return; 
     }
 
+    // Tela 2: DIÁLOGO DRAMÁTICO DO RIVAL
+    if (estadoJogo === "RIVAL_DIALOGO") {
+        if (tecla === " ") {
+            falaRival++;
+            if (falaRival >= textosRival.length) {
+                estadoJogo = "TRANSICAO_FINAL";
+            }
+        }
+        return;
+    }
+
+    // Tela 3: TRANSIÇÃO E REFLEXÃO
+    if (estadoJogo === "TRANSICAO_FINAL") {
+        if (tecla === " ") {
+            transicaoFase++;
+            if (transicaoFase >= textosTransicao.length) {
+                estadoJogo = "ACUSACAO";
+            }
+        }
+        return;
+    }
+
+    // Tela 4: SELEÇÃO DO ACUSADO (Julgamento)
+    if (estadoJogo === "ACUSACAO") {
+        if (tecla === "ArrowRight") {
+            suspeitoSelecionado = (suspeitoSelecionado + 1) % 5;
+        }
+        if (tecla === "ArrowLeft") {
+            suspeitoSelecionado = (suspeitoSelecionado - 1 + 5) % 5; // Evita número negativo
+        }
+        if (tecla === " ") {
+            estadoJogo = "FIM"; 
+        }
+        return;
+    }
+
+    // Lógica Normal de Exploração
     if (tecla === " " && estadoJogo === "EXPLORANDO") {
         let perto = npcs.find(n => colidindo(detetive, n));
         if (perto) {
-            estadoJogo = "DIALOGO";
             npcFoco = perto;
             textoResposta = "";
             
             if (npcFoco.tipo === "rival") {
                 if (pistasColetadas >= totalPistas) {
-                    textoResposta = "RIVAL: Maldição... Como você descobriu? FUI EU!";
-                    setTimeout(() => { estadoJogo = "FIM"; }, 4000); 
+                    // Começa o drama do Rival
+                    estadoJogo = "RIVAL_DIALOGO";
+                    falaRival = 0;
                 } else {
+                    estadoJogo = "DIALOGO";
                     textoResposta = "RIVAL: Saia daqui! Volte quando tiver provas de verdade!";
                 }
+            } else {
+                estadoJogo = "DIALOGO";
             }
         }
     } 
     else if (tecla === " " && estadoJogo === "DIALOGO" && textoResposta !== "") {
-        if (estadoJogo !== "FIM") { 
-            estadoJogo = "EXPLORANDO";
-            npcFoco = null;
-        }
+        estadoJogo = "EXPLORANDO";
+        npcFoco = null;
     }
 
     if (estadoJogo === "DIALOGO" && textoResposta === "" && npcFoco.tipo !== "rival") {
@@ -144,7 +205,7 @@ window.addEventListener("keydown", (e) => {
 });
 window.addEventListener("keyup", (e) => keys[e.key] = false);
 
-// --- CRIANDO OS CONTROLES MOBILE NA TELA ---
+// --- CRIANDO OS CONTROLES MOBILE ---
 function criarBotaoMobile(txt, left, bottom, right, tamanho, tecla) {
     let btn = document.createElement("div");
     btn.className = "btn-mobile"; 
@@ -184,7 +245,6 @@ function criarBotaoMobile(txt, left, bottom, right, tamanho, tecla) {
     btn.addEventListener("mousedown", pressionar);
     btn.addEventListener("mouseup", soltar);
     btn.addEventListener("mouseleave", soltar);
-
     document.body.appendChild(btn);
 }
 
@@ -239,27 +299,68 @@ function draw() {
 
     // --- TELA DE INTRODUÇÃO ---
     if (estadoJogo === "INTRO") {
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.font = "32px Arial";
-        
-        // Pega o texto atual da fase e desenha quebrando as linhas
-        let textoAtual = textosIntro[introFase];
-        wrapText(ctx, textoAtual, canvas.width / 2, canvas.height / 2 - 40, 1000, 45);
-
-        ctx.fillStyle = "#64ffda";
-        ctx.font = "20px Arial";
+        ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "32px Arial";
+        wrapText(ctx, textosIntro[introFase], canvas.width / 2, canvas.height / 2 - 40, 1000, 45);
+        ctx.fillStyle = "#64ffda"; ctx.font = "20px Arial";
         ctx.fillText("[ Aperte A (ou ESPAÇO) para continuar ]", canvas.width / 2, canvas.height - 80);
-        
-        ctx.textAlign = "left"; // Reseta o alinhamento para não quebrar o resto do jogo
+        ctx.textAlign = "left"; 
         requestAnimationFrame(gameLoop);
-        return; // Sai da função draw() para não desenhar o mapa ainda
+        return; 
     }
     
-    // --- O JOGO PRINCIPAL (Só desenha se não estiver na intro) ---
+    // --- TELA DE TRANSIÇÃO (Reflexão do Detetive) ---
+    if (estadoJogo === "TRANSICAO_FINAL") {
+        ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "32px Arial";
+        wrapText(ctx, textosTransicao[transicaoFase], canvas.width / 2, canvas.height / 2 - 40, 1000, 45);
+        ctx.fillStyle = "#64ffda"; ctx.font = "20px Arial";
+        ctx.fillText("[ Aperte A (ou ESPAÇO) para continuar ]", canvas.width / 2, canvas.height - 80);
+        ctx.textAlign = "left"; 
+        requestAnimationFrame(gameLoop);
+        return;
+    }
+
+    // --- TELA DE ACUSAÇÃO (A Escolha Final) ---
+    if (estadoJogo === "ACUSACAO") {
+        ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        if (inteImg.complete && inteImg.naturalWidth > 0) {
+            let imgW = 800; // Largura da imagem na tela
+            let imgH = 450; // Altura da imagem na tela
+            let startX = (canvas.width - imgW) / 2;
+            let startY = (canvas.height - imgH) / 2 - 40;
+            
+            ctx.drawImage(inteImg, startX, startY, imgW, imgH);
+            
+            // Desenha a caixa de seleção vermelha sobre o suspeito
+            let charW = imgW / 5; // Divide a imagem em 5 partes
+            let selX = startX + (suspeitoSelecionado * charW);
+            
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 6;
+            ctx.strokeRect(selX, startY, charW, imgH);
+            
+            // Textos da Tela
+            ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "bold 40px Arial";
+            ctx.fillText("QUEM É O CULPADO?", canvas.width / 2, 100);
+            
+            ctx.fillStyle = "#ffe600"; ctx.font = "bold 32px Arial";
+            ctx.fillText("Acusar: " + suspeitosNomes[suspeitoSelecionado], canvas.width / 2, startY + imgH + 60);
+            
+            ctx.fillStyle = "#64ffda"; ctx.font = "22px Arial";
+            ctx.fillText("Use SETAS (Esquerda/Direita) para escolher e A/ESPAÇO para confirmar", canvas.width / 2, startY + imgH + 110);
+        } else {
+            ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "20px Arial";
+            ctx.fillText("Carregando suspeitos... (Verifique a imagem inte.png)", canvas.width / 2, canvas.height / 2);
+        }
+        
+        ctx.textAlign = "left"; 
+        requestAnimationFrame(gameLoop);
+        return;
+    }
+
+    // --- O JOGO PRINCIPAL E DIÁLOGOS ---
     if (mapaImg.complete && mapaImg.naturalWidth > 0) {
         ctx.drawImage(mapaImg, 0, 0, canvas.width, canvas.height);
     } else {
@@ -288,10 +389,8 @@ function draw() {
     if (estadoJogo === "EXPLORANDO") {
         let perto = npcs.find(n => colidindo(detetive, n));
         if (perto) {
-            ctx.fillStyle = "rgba(0,0,0,0.85)";
-            ctx.fillRect(detetive.x - 20, detetive.y - 45, 130, 30);
-            ctx.fillStyle = "white"; ctx.font = "bold 13px sans-serif";
-            ctx.fillText("Botão A / ESPAÇO", detetive.x - 12, detetive.y - 25);
+            ctx.fillStyle = "rgba(0,0,0,0.85)"; ctx.fillRect(detetive.x - 20, detetive.y - 45, 130, 30);
+            ctx.fillStyle = "white"; ctx.font = "bold 13px sans-serif"; ctx.fillText("Botão A / ESPAÇO", detetive.x - 12, detetive.y - 25);
         }
     }
 
@@ -300,10 +399,10 @@ function draw() {
     ctx.fillStyle = "#64ffda"; ctx.font = "bold 18px sans-serif";
     ctx.fillText("🔎 Provas: " + pistasColetadas + " / " + totalPistas, 45, 48);
 
+    // Diálogo Normal
     if (estadoJogo === "DIALOGO") {
         ctx.fillStyle = "rgba(15, 23, 42, 0.95)"; ctx.fillRect(154, 540, 1100, 180);
         ctx.strokeStyle = "#64ffda"; ctx.lineWidth = 4; ctx.strokeRect(154, 540, 1100, 180);
-        
         ctx.fillStyle = "#64ffda"; ctx.font = "bold 26px Arial"; ctx.fillText(npcFoco.nome + ":", 190, 585);
         ctx.fillStyle = "white"; ctx.font = "21px Arial";
 
@@ -317,14 +416,40 @@ function draw() {
         }
     }
 
+    // Diálogo Dramático do Rival
+    if (estadoJogo === "RIVAL_DIALOGO") {
+        ctx.fillStyle = "rgba(15, 23, 42, 0.95)"; ctx.fillRect(154, 540, 1100, 180);
+        ctx.strokeStyle = "#ff4444"; ctx.lineWidth = 4; ctx.strokeRect(154, 540, 1100, 180);
+        ctx.fillStyle = "#ff4444"; ctx.font = "bold 26px Arial"; ctx.fillText("Rival:", 190, 585);
+        ctx.fillStyle = "white"; ctx.font = "21px Arial";
+        
+        wrapText(ctx, textosRival[falaRival], 190, 625, 1000, 30);
+        
+        ctx.fillStyle = "#94a3b8"; ctx.font = "16px Arial"; ctx.fillText("[ Aperte A (ou ESPAÇO) para continuar ]", 190, 700);
+    }
+
+    // --- GAME OVER / VITÓRIA ---
     if (estadoJogo === "FIM") {
-        ctx.fillStyle = "rgba(0, 15, 5, 0.92)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#ffe600"; ctx.textAlign = "center"; ctx.font = "bold 70px sans-serif";
-        ctx.fillText("🏆 VOCÊ VENCEU!", canvas.width / 2, canvas.height / 2 - 30);
-        ctx.fillStyle = "white"; ctx.font = "26px sans-serif";
-        ctx.fillText("O Rival foi desmascarado e o Tião está livre!", canvas.width / 2, canvas.height / 2 + 30);
+        ctx.fillStyle = "rgba(0, 15, 5, 0.95)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.textAlign = "center"; 
+        
+        // Se escolheu o índice 0 (O primeiro cara de terno na imagem, que é o Rival)
+        if (suspeitoSelecionado === 0) { 
+            ctx.fillStyle = "#ffe600"; ctx.font = "bold 70px sans-serif";
+            ctx.fillText("🏆 VOCÊ VENCEU!", canvas.width / 2, canvas.height / 2 - 30);
+            ctx.fillStyle = "white"; ctx.font = "26px sans-serif";
+            ctx.fillText("Parabéns, detetive! Apesar da história comovente,", canvas.width / 2, canvas.height / 2 + 30);
+            ctx.fillText("as pistas provaram que o Rival era o verdadeiro culpado!", canvas.width / 2, canvas.height / 2 + 70);
+        } else {
+            ctx.fillStyle = "#ff4444"; ctx.font = "bold 70px sans-serif";
+            ctx.fillText("❌ ACUSAÇÃO INCORRETA", canvas.width / 2, canvas.height / 2 - 30);
+            ctx.fillStyle = "white"; ctx.font = "26px sans-serif";
+            ctx.fillText("Você acusou a pessoa errada! O verdadeiro culpado escapou", canvas.width / 2, canvas.height / 2 + 30);
+            ctx.fillText("e um inocente pagou pelo crime. O mistério continua...", canvas.width / 2, canvas.height / 2 + 70);
+        }
+        
         ctx.fillStyle = "#64ffda"; ctx.font = "bold 20px sans-serif";
-        ctx.fillText(">> Atualize a página para jogar novamente <<", canvas.width / 2, canvas.height / 2 + 100);
+        ctx.fillText(">> Atualize a página para jogar novamente <<", canvas.width / 2, canvas.height / 2 + 150);
         ctx.textAlign = "left"; 
     }
 
