@@ -15,19 +15,7 @@ estilo.innerHTML = `
 `;
 document.head.appendChild(estilo);
 
-let titulo = document.createElement("h2");
-titulo.innerText = "🕵️ Mistério na Vila: O Interrogatório Final";
-titulo.style.fontFamily = "sans-serif";
-titulo.style.textAlign = "center";
-titulo.style.color = "#fff";
-titulo.style.position = "absolute"; 
-titulo.style.width = "100%";
-titulo.style.top = "10px";
-titulo.style.margin = "0";
-titulo.style.textShadow = "2px 2px 5px rgba(0,0,0,0.9)";
-titulo.style.pointerEvents = "none"; 
-titulo.style.zIndex = "10"; 
-document.body.appendChild(titulo);
+// O TITULO QUE ATRAPALHAVA FOI REMOVIDO DAQUI COLETIVAMENTE 🕵️
 
 let canvas = document.createElement("canvas");
 canvas.width = 1408;  
@@ -106,13 +94,8 @@ let npcs = [
     { nome: "Rival", img: rivalImg, x: 150, y: 550, w: 85, h: 85, tipo: "rival" }
 ];
 
-// --- BARREIRAS INVISÍVEIS ---
 let mostrarParedes = false; 
-let paredes = [
-    { x: 200, y: 150, w: 180, h: 140 },  
-    { x: 1000, y: 120, w: 200, h: 140 }, 
-    { x: 1100, y: 450, w: 220, h: 130 }  
-];
+let paredes = []; 
 
 let itensCenario = [
     { nome: "Lenço de Seda", icone: "🧣", x: 850, y: 150, w: 40, h: 40, coletado: false }
@@ -127,7 +110,7 @@ let suspeitosNomes = ["Rival", "Tião", "Padre", "Seu Zé", "Dona Maria"];
 let textosIntro = [
     "Em um dia aparentemente comum na pequena cidade da roça, um grande crime abalou a tranquilidade dos moradores. No alto do morro, na casa mais luxuosa da região, vivia o respeitado presidente Jairo. Entre seus bens mais valiosos estava um relógio de ouro raro, uma relíquia de família passada de geração em geração durante décadas.",
     "Mas, ao amanhecer, uma notícia chocante se espalhou pela cidade: o relógio havia sido roubado!",
-    "O desaparecimento da preciosa herança gerou medo, dúvidas e muitas suspeitas. Entre os moradores, um nome logo começou a ser comentado: Tião. Mas será que ele é realmente o culpado ou está sendo acusado injustamente?",
+    "O desaparecimento da preciosa herança gerou medo, dúvidas e muitas suspeitas. Entre os moradores, um nome logo começou a ser comentando: Tião. Mas será que ele é realmente o culpado ou está sendo acusado injustamente?",
     "Diante desse mistério, precisamos da ajuda do melhor detetive da região. E esse detetive é você!",
     "Sua missão será investigar as pistas, interrogar os suspeitos, descobrir o verdadeiro ladrão e, acima de tudo, provar se Tião é culpado ou inocente.",
     "Boa sorte, detetive. O trem parte em 3 minutos! Solucione o caso antes que o culpado fuja."
@@ -189,7 +172,7 @@ function acionarAcao(tecla) {
     }
 
     if (tecla === " " && estadoJogo === "EXPLORANDO") {
-        let hitboxInteracao = { x: detetive.x - 15, y: detetive.y - 15, w: detetive.w + 30, h: detetive.h + 30 };
+        let hitboxInteracao = { x: detetive.x - 20, y: detetive.y - 20, w: detetive.w + 40, h: detetive.h + 40 };
         let pertoNPC = npcs.find(n => colidindo(hitboxInteracao, n));
         let pertoItem = itensCenario.find(i => colidindo(hitboxInteracao, i) && !i.coletado);
 
@@ -203,7 +186,10 @@ function acionarAcao(tecla) {
                     estadoJogo = "RIVAL_DIALOGO"; falaRival = 0; charIndex = 0;
                 } else {
                     estadoJogo = "DIALOGO";
-                    textoResposta = "RIVAL: Saia daqui! Você ainda não achou a pista escondida no cenário e todas as provas dos moradores!";
+                    // MOSTRANDO O CONTEÚDO ATUAL DA MOCHILA SE O JOGADOR TENTAR ACUSAR SEM PROVAS
+                    let itensNaMochila = itensCenario.filter(i => i.coletado).map(i => i.nome).join(", ") || "Nenhum objeto";
+                    let depoimentosNaMochila = npcs.filter(n => n.pistaColetada).map(n => n.nome).join(", ") || "Nenhum depoimento";
+                    textoResposta = `RIVAL: Saia daqui! Você ainda não tem todas as provas! [MOCHILA ATUAL: Itens: ${itensNaMochila} | Depoimentos de: ${depoimentosNaMochila}]`;
                 }
             } else {
                 estadoJogo = "DIALOGO";
@@ -213,8 +199,8 @@ function acionarAcao(tecla) {
             pertoItem.coletado = true;
             pistasColetadas++;
             estadoJogo = "DIALOGO";
-            npcFoco = { nome: "SISTEMA", tipo: "sistema" };
-            textoResposta = `Você encontrou uma pista vital: ${pertoItem.nome}! Havia marcas de sapato elegante ao lado...`;
+            npcFoco = { nome: "MOCHILA DO DETETIVE", tipo: "sistema" };
+            textoResposta = `Você guardou na mochila: ${pertoItem.nome}! Havia marcas de sapato elegante ao lado...`;
             charIndex = 0;
         }
     } 
@@ -328,36 +314,15 @@ function update() {
             somPassos.pause();
         }
 
-        let proximoX = detetive.x;
-        let proximoY = detetive.y;
+        if (keys["ArrowUp"]) detetive.y -= detetive.speed;
+        if (keys["ArrowDown"]) detetive.y += detetive.speed;
+        if (keys["ArrowLeft"]) detetive.x -= detetive.speed;
+        if (keys["ArrowRight"]) detetive.x += detetive.speed;
 
-        if (keys["ArrowUp"]) proximoY -= detetive.speed;
-        if (keys["ArrowDown"]) proximoY += detetive.speed;
-        if (keys["ArrowLeft"]) proximoX -= detetive.speed;
-        if (keys["ArrowRight"]) proximoX += detetive.speed;
-
-        if (proximoX < 0) proximoX = 0;
-        if (proximoY < 0) proximoY = 0;
-        if (proximoX + detetive.w > canvas.width) proximoX = canvas.width - detetive.w;
-        if (proximoY + detetive.h > canvas.height) proximoY = canvas.height - detetive.h;
-
-        let detetiveFuturo = { x: proximoX, y: proximoY, w: detetive.w, h: detetive.h };
-        let bloqueado = false;
-
-        for (let parede of paredes) {
-            if (colidindo(detetiveFuturo, parede)) { bloqueado = true; break; }
-        }
-
-        if (!bloqueado) {
-            for (let npc of npcs) {
-                if (colidindo(detetiveFuturo, npc)) { bloqueado = true; break; }
-            }
-        }
-
-        if (!bloqueado) {
-            detetive.x = proximoX;
-            detetive.y = proximoY;
-        }
+        if (detetive.x < 0) detetive.x = 0;
+        if (detetive.y < 0) detetive.y = 0;
+        if (detetive.x + detetive.w > canvas.width) detetive.x = canvas.width - detetive.w;
+        if (detetive.y + detetive.h > canvas.height) detetive.y = canvas.height - detetive.h;
     } else {
         somPassos.pause(); 
     }
@@ -376,7 +341,6 @@ function draw() {
 
         wrapText(ctx, textoParcial, canvas.width / 2, canvas.height / 2 - 60, 1000, 45);
         
-        // --- CRÉDITO NA INTRODUÇÃO ---
         ctx.fillStyle = "rgba(255, 255, 255, 0.5)"; ctx.font = "italic 18px Arial";
         ctx.fillText("Um jogo desenvolvido por: Anna Jullya Costa De Araujo", canvas.width / 2, 45);
 
@@ -393,7 +357,6 @@ function draw() {
         ctx.fillStyle = "white"; ctx.font = "26px sans-serif";
         ctx.fillText("O trem das 18h partiu. O culpado conseguiu fugir da cidade...", canvas.width / 2, canvas.height / 2 + 30);
         
-        // Crédito no fim por tempo
         ctx.fillStyle = "rgba(255, 255, 255, 0.4)"; ctx.font = "16px Arial";
         ctx.fillText("Criado por Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 40);
 
@@ -426,11 +389,6 @@ function draw() {
         ctx.drawImage(mapaImg, 0, 0, canvas.width, canvas.height);
     } else {
         ctx.fillStyle = "#333"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-
-    if (mostrarParedes) {
-        ctx.fillStyle = "rgba(255, 0, 0, 0.4)";
-        for (let parede of paredes) { ctx.fillRect(parede.x, parede.y, parede.w, parede.h); }
     }
 
     for (let item of itensCenario) {
@@ -474,7 +432,7 @@ function draw() {
     ctx.restore();
 
     if (estadoJogo === "EXPLORANDO") {
-        let hitboxInteracao = { x: detetive.x - 15, y: detetive.y - 15, w: detetive.w + 30, h: detetive.h + 30 };
+        let hitboxInteracao = { x: detetive.x - 20, y: detetive.y - 20, w: detetive.w + 40, h: detetive.h + 40 };
         let pertoNPC = npcs.find(n => colidindo(hitboxInteracao, n));
         let pertoItem = itensCenario.find(i => colidindo(hitboxInteracao, i) && !i.coletado);
         
@@ -567,7 +525,6 @@ function draw() {
             ctx.fillText("e um inocente pagou pelo crime. O mistério continua...", canvas.width / 2, canvas.height / 2 + 70);
         }
         
-        // --- CRÉDITO NAS TELAS DE FIM ---
         ctx.fillStyle = "rgba(255, 255, 255, 0.4)"; ctx.font = "16px Arial";
         ctx.fillText("Jogo criado por Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 40);
 
