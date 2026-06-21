@@ -45,7 +45,7 @@ somPista.volume = 0.6;
 
 let somClickDialogo = new Audio("click.mp3"); 
 let somMenuOpcoes = new Audio("click.mp3"); 
-let somTrem = new Audio("trem.mp3"); // NOVO SOM DO TREM 🎵
+let somTrem = new Audio("trem.mp3"); 
 
 let musicaMisterio = new Audio("misterio.mp3");
 musicaMisterio.loop = true;
@@ -58,7 +58,7 @@ musicaTensa30s.volume = 0.5;
 let musicaAtiva = "MISTERIO"; 
 
 function gerenciarMusicaFundo() {
-    if (tempoRestante <= 30 && tempoRestante > 0 && estadoJogo !== "INTRO" && estadoJogo !== "FIM" && estadoJogo !== "FIM_TEMPO") {
+    if (tempoRestante <= 30 && tempoRestante > 0 && estadoJogo !== "INTRO" && estadoJogo !== "FIM" && estadoJogo !== "FIM_TEMPO" && estadoJogo !== "EXPLICACAO_FINAL") {
         if (musicaAtiva !== "TENSA") {
             musicaMisterio.pause();
             musicaTensa30s.currentTime = 0;
@@ -73,7 +73,7 @@ function gerenciarMusicaFundo() {
         }
     }
     
-    if (estadoJogo === "FIM" || estadoJogo === "FIM_TEMPO") {
+    if (estadoJogo === "FIM" || estadoJogo === "FIM_TEMPO" || estadoJogo === "EXPLICACAO_FINAL") {
         musicaMisterio.pause();
         musicaTensa30s.pause();
     }
@@ -104,11 +104,9 @@ let textoResposta = "";
 let pistasColetadas = 0;
 let totalPistas = 4; 
 
-// --- SISTEMA DE AVISOS (CONSEQUÊNCIAS DO TEMPO) ---
 let avisoSistema = "";
 let timerAviso = 0;
 
-// --- CADERNO DO DETETIVE ---
 let cadernoAberto = false;
 let anotacoes = [];
 
@@ -124,20 +122,16 @@ let timerJogo = setInterval(() => {
             tempoRestante--;
             gerenciarMusicaFundo(); 
 
-            // EVENTOS DE CONSEQUÊNCIA DO TEMPO ⏱️
             if (tempoRestante === 120) {
                 avisoSistema = "O Rival foi visto olhando nervosamente para a estação de trem!";
-                timerAviso = 6; // O aviso fica na tela por 6 segundos
+                timerAviso = 6;
             }
             if (tempoRestante === 60) {
                 avisoSistema = "PRIIII! O trem apitou! Vai partir em 1 minuto, corra!";
                 timerAviso = 6;
-                somTrem.play().catch(()=>{}); // Toca o apito do trem
+                somTrem.play().catch(()=>{});
             }
-            
-            // Reduz o tempo do aviso na tela
             if (timerAviso > 0) timerAviso--;
-
         } else {
             estadoJogo = "FIM_TEMPO";
             gerenciarMusicaFundo();
@@ -145,7 +139,6 @@ let timerJogo = setInterval(() => {
     }
 }, 1000);
 
-// --- PERSONAGENS ---
 let detetive = { x: 660, y: 350, w: 85, h: 85, speed: 6 };
 
 let npcs = [
@@ -165,10 +158,10 @@ let transicaoFase = 0;
 let suspeitoSelecionado = 0; 
 let suspeitosNomes = ["Rival", "Tião", "Padre", "Seu Zé", "Dona Maria"];
 
-// Textos
+// --- TEXTOS DO JOGO ---
 let textosIntro = [
-    "Em um dia aparentemente comum na pequena cidade da roça, um grande crime abalou a tranquilidade dos moradores. No alto do morro, na casa mais luxuosa da região, vivia o respeitado presidente Jairo. Entre seus bens mais valiosos estava um relógio de ouro raro.",
-    "Mas, ao amanhecer, uma notícia chocante se espalhou pela cidade: o relógio havia sido roubado!",
+    "Em um dia aparentemente comum na pequena cidade da roça, um grande crime abalou a tranquilidade dos moradores. No alto do morro, na casa mais luxuosa da região, vivia o respeitado presidente Jairo.",
+    "Mas, ao amanhecer, uma notícia chocante se espalhou pela cidade: seu raro relógio de ouro havia sido roubado!",
     "O desaparecimento da preciosa herança gerou medo, dúvidas e muitas suspeitas. Entre os moradores, um nome logo começou a ser comentado: Tião.",
     "Sua missão será investigar as pistas, interrogar os suspeitos, descobrir o verdadeiro ladrão e provar se Tião é culpado ou inocente.",
     "Boa sorte, detetive. O trem parte em 3 minutos! Solucione o caso antes que o culpado fuja."
@@ -188,7 +181,42 @@ let textosTransicao = [
     "Quem roubou o relógio de ouro do presidente Jairo?"
 ];
 
+let textosExplicacao = [];
+let explicacaoFase = 0;
+
 let keys = {};
+
+function prepararExplicacao() {
+    if (suspeitoSelecionado === 0 && pistasColetadas >= totalPistas) {
+        textosExplicacao = [
+            "Você apresentou todas as provas irrefutáveis contra o Rival.",
+            "A luva de luxo esquecida na janela de Tião, o lenço sujo na cena do crime, e os relatos sobre sua fuga e seu plano macabro...",
+            "Sem saída, o Rival desabou. Ele confessou que roubou o relógio para incriminar Tião e tomar suas terras a preço de banana.",
+            "O relógio foi recuperado e Tião foi declarado completamente inocente perante a cidade!"
+        ];
+    } else if (suspeitoSelecionado === 0 && pistasColetadas < totalPistas) {
+        textosExplicacao = [
+            "Você apontou o Rival como o grande culpado pelo crime.",
+            "No entanto... a acusação foi baseada apenas em suposições. Faltavam provas concretas conectando ele à cena do crime.",
+            "Com advogados caros, o Rival desqualificou rapidamente a sua denúncia no tribunal.",
+            "Ele saiu rindo pela porta da frente, enquanto o verdadeiro paradeiro do relógio continuou sendo um mistério..."
+        ];
+    } else if (suspeitoSelecionado === 2) {
+        textosExplicacao = [
+            "Você virou-se para o Padre e o acusou perante toda a cidade.",
+            "Um murmúrio de choque tomou conta do local. Como um homem de fé faria tal coisa?",
+            "Abalado e incapaz de mentir, o Padre caiu de joelhos aos prantos.",
+            "Ele confessou ter roubado a relíquia em um momento de desespero para pagar dívidas obscuras da paróquia que estava afundando..."
+        ];
+    } else {
+        textosExplicacao = [
+            `Você acusou firmemente ${suspeitosNomes[suspeitoSelecionado]} pelo roubo.`,
+            "A polícia acreditou no seu instinto de detetive e prendeu o suspeito imediatamente.",
+            "Semanas depois, porém, o relógio de ouro apareceu sendo vendido em um leilão clandestino muito longe dali.",
+            "Você percebeu, tarde demais, que mandou um inocente para trás das grades enquanto o verdadeiro ladrão fugia ileso no trem..."
+        ];
+    }
+}
 
 function acionarAcao(tecla) {
     if (estadoJogo === "INTRO") {
@@ -209,10 +237,7 @@ function acionarAcao(tecla) {
     }
     
     if (cadernoAberto) {
-        if (tecla === " ") { 
-            somMenuOpcoes.play().catch(()=>{});
-            cadernoAberto = false;
-        }
+        if (tecla === " ") { somMenuOpcoes.play().catch(()=>{}); cadernoAberto = false; }
         return; 
     }
 
@@ -240,7 +265,41 @@ function acionarAcao(tecla) {
     if (estadoJogo === "ACUSACAO") {
         if (tecla === "ArrowRight") { suspeitoSelecionado = (suspeitoSelecionado + 1) % 5; somMenuOpcoes.play().catch(()=>{}); }
         if (tecla === "ArrowLeft") { suspeitoSelecionado = (suspeitoSelecionado - 1 + 5) % 5; somMenuOpcoes.play().catch(()=>{}); }
-        if (tecla === " ") { somPista.play().catch(()=>{}); estadoJogo = "FIM"; gerenciarMusicaFundo(); }
+        if (tecla === " ") { 
+            somClickDialogo.play().catch(()=>{}); 
+            estadoJogo = "CONFIRMACAO"; // Vai para a tela de confirmação
+        }
+        return;
+    }
+
+    // --- NOVA TELA: CONFIRMAÇÃO ---
+    if (estadoJogo === "CONFIRMACAO") {
+        if (tecla === "1") { 
+            somPista.play().catch(()=>{}); 
+            prepararExplicacao();
+            gerenciarMusicaFundo(); // Pausa música tensa
+            estadoJogo = "EXPLICACAO_FINAL";
+            charIndex = 0;
+            explicacaoFase = 0;
+        }
+        if (tecla === "2") {
+            somMenuOpcoes.play().catch(()=>{}); 
+            estadoJogo = "ACUSACAO"; // Cancela e volta a escolher
+        }
+        return;
+    }
+
+    // --- NOVA TELA: EXPLICAÇÃO DO CASO ---
+    if (estadoJogo === "EXPLICACAO_FINAL") {
+        if (tecla === " ") {
+            somClickDialogo.play().catch(()=>{});
+            if (charIndex < textosExplicacao[explicacaoFase].length) {
+                charIndex = textosExplicacao[explicacaoFase].length;
+            } else {
+                explicacaoFase++; charIndex = 0;
+                if (explicacaoFase >= textosExplicacao.length) estadoJogo = "FIM";
+            }
+        }
         return;
     }
 
@@ -251,41 +310,27 @@ function acionarAcao(tecla) {
 
         if (pertoNPC) {
             somClickDialogo.play().catch(()=>{}); 
-            npcFoco = pertoNPC;
-            textoResposta = ""; charIndex = 0;
-            estadoJogo = "DIALOGO";
+            npcFoco = pertoNPC; textoResposta = ""; charIndex = 0; estadoJogo = "DIALOGO";
         } else if (pertoItem) {
             somPista.play().catch(()=>{}); 
-            pertoItem.coletado = true;
-            pistasColetadas++;
-            anotacoes.push(pertoItem.textoPista); 
-            estadoJogo = "DIALOGO";
-            npcFoco = { nome: "NOVA ANOTAÇÃO", tipo: "sistema" };
-            textoResposta = `Você anotou uma pista no caderno! Aperte C para ler.`;
-            charIndex = 0;
+            pertoItem.coletado = true; pistasColetadas++; anotacoes.push(pertoItem.textoPista); 
+            estadoJogo = "DIALOGO"; npcFoco = { nome: "NOVA ANOTAÇÃO", tipo: "sistema" };
+            textoResposta = `Você anotou uma pista no caderno! Aperte C para ler.`; charIndex = 0;
         }
     } 
     else if (tecla === " " && estadoJogo === "DIALOGO" && textoResposta !== "") {
-        if (charIndex < textoResposta.length) {
-            charIndex = textoResposta.length; 
-        } else {
-            somClickDialogo.play().catch(()=>{}); 
-            estadoJogo = "EXPLORANDO"; npcFoco = null;
-        }
+        if (charIndex < textoResposta.length) { charIndex = textoResposta.length; } 
+        else { somClickDialogo.play().catch(()=>{}); estadoJogo = "EXPLORANDO"; npcFoco = null; }
     }
 
     if (estadoJogo === "DIALOGO" && textoResposta === "" && npcFoco && npcFoco.tipo !== "sistema") {
         if (tecla === "1") {
             somMenuOpcoes.play().catch(()=>{}); 
-            if (npcFoco.tipo === "rival") {
-                estadoJogo = "RIVAL_DIALOGO"; falaRival = 0; charIndex = 0;
-            } else {
+            if (npcFoco.tipo === "rival") { estadoJogo = "RIVAL_DIALOGO"; falaRival = 0; charIndex = 0; } 
+            else {
                 textoResposta = npcFoco.resposta1; charIndex = 0;
                 if (npcFoco.daPista1 && !npcFoco.pistaColetada) { 
-                    somPista.play().catch(()=>{}); 
-                    pistasColetadas++; 
-                    npcFoco.pistaColetada = true; 
-                    if (npcFoco.textoPista1) anotacoes.push(npcFoco.textoPista1);
+                    somPista.play().catch(()=>{}); pistasColetadas++; npcFoco.pistaColetada = true; if (npcFoco.textoPista1) anotacoes.push(npcFoco.textoPista1);
                 }
             }
         }
@@ -293,10 +338,7 @@ function acionarAcao(tecla) {
             somMenuOpcoes.play().catch(()=>{}); 
             textoResposta = npcFoco.resposta2; charIndex = 0;
             if (npcFoco.daPista2 && !npcFoco.pistaColetada) { 
-                somPista.play().catch(()=>{}); 
-                pistasColetadas++; 
-                npcFoco.pistaColetada = true; 
-                if (npcFoco.textoPista2) anotacoes.push(npcFoco.textoPista2);
+                somPista.play().catch(()=>{}); pistasColetadas++; npcFoco.pistaColetada = true; if (npcFoco.textoPista2) anotacoes.push(npcFoco.textoPista2);
             }
         }
     }
@@ -304,49 +346,22 @@ function acionarAcao(tecla) {
 
 window.addEventListener("keydown", (e) => {
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "1", "2", "c", "C"].includes(e.key)) { e.preventDefault(); }
-    keys[e.key] = true;
-    acionarAcao(e.key);
+    keys[e.key] = true; acionarAcao(e.key);
 });
 window.addEventListener("keyup", (e) => keys[e.key] = false);
 
 // Controles Mobile
 function criarBotaoMobile(txt, props, tecla) {
-    let btn = document.createElement("div");
-    btn.className = "btn-mobile"; 
-    btn.innerText = txt;
-    btn.style.position = "absolute";
-    
-    if (props.left !== undefined) btn.style.left = props.left;
-    if (props.right !== undefined) btn.style.right = props.right;
-    if (props.bottom !== undefined) btn.style.bottom = props.bottom;
-    if (props.top !== undefined) btn.style.top = props.top;
-    
-    btn.style.width = props.size || "60px";
-    btn.style.height = props.size || "60px";
-    
-    btn.style.backgroundColor = props.bg || "rgba(255, 255, 255, 0.2)";
-    btn.style.border = "3px solid rgba(255, 255, 255, 0.6)";
-    btn.style.borderRadius = "50%";
-    btn.style.color = "white";
-    btn.style.alignItems = "center";
-    btn.style.justifyContent = "center";
-    btn.style.fontSize = props.fontSize || "26px";
-    btn.style.fontWeight = "bold";
-    btn.style.userSelect = "none";
-    btn.style.zIndex = "100";
-    btn.style.touchAction = "none"; 
+    let btn = document.createElement("div"); btn.className = "btn-mobile"; btn.innerText = txt; btn.style.position = "absolute";
+    if (props.left !== undefined) btn.style.left = props.left; if (props.right !== undefined) btn.style.right = props.right;
+    if (props.bottom !== undefined) btn.style.bottom = props.bottom; if (props.top !== undefined) btn.style.top = props.top;
+    btn.style.width = props.size || "60px"; btn.style.height = props.size || "60px"; btn.style.backgroundColor = props.bg || "rgba(255, 255, 255, 0.2)";
+    btn.style.border = "3px solid rgba(255, 255, 255, 0.6)"; btn.style.borderRadius = "50%"; btn.style.color = "white";
+    btn.style.alignItems = "center"; btn.style.justifyContent = "center"; btn.style.fontSize = props.fontSize || "26px";
+    btn.style.fontWeight = "bold"; btn.style.userSelect = "none"; btn.style.zIndex = "100"; btn.style.touchAction = "none"; 
 
-    let pressionar = (e) => {
-        e.preventDefault();
-        btn.style.backgroundColor = "rgba(255, 255, 255, 0.6)";
-        keys[tecla] = true;
-        acionarAcao(tecla);
-    };
-    let soltar = (e) => {
-        e.preventDefault();
-        btn.style.backgroundColor = props.bg || "rgba(255, 255, 255, 0.2)";
-        keys[tecla] = false;
-    };
+    let pressionar = (e) => { e.preventDefault(); btn.style.backgroundColor = "rgba(255, 255, 255, 0.6)"; keys[tecla] = true; acionarAcao(tecla); };
+    let soltar = (e) => { e.preventDefault(); btn.style.backgroundColor = props.bg || "rgba(255, 255, 255, 0.2)"; keys[tecla] = false; };
 
     btn.addEventListener("touchstart", pressionar); btn.addEventListener("touchend", soltar);
     btn.addEventListener("mousedown", pressionar); btn.addEventListener("mouseup", soltar);
@@ -362,50 +377,36 @@ criarBotaoMobile("1", {right: "120px", bottom: "130px", size: "55px"}, "1");
 criarBotaoMobile("2", {right: "30px", bottom: "130px", size: "55px"}, "2");
 criarBotaoMobile("📓", {right: "20px", top: "20px", size: "65px", fontSize: "30px", bg: "rgba(100, 255, 218, 0.3)"}, "c");
 
-function colidindo(r1, r2) {
-    return (r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y);
-}
+function colidindo(r1, r2) { return (r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y); }
 
 function wrapText(context, text, x, y, maxWidth, lineHeight) {
     let words = text.split(' '); let line = '';
     for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + ' '; let metrics = context.measureText(testLine);
         let testWidth = metrics.width;
-        if (testWidth > maxWidth && n > 0) {
-            context.fillText(line, x, y); line = words[n] + ' '; y += lineHeight;
-        } else { line = testLine; }
+        if (testWidth > maxWidth && n > 0) { context.fillText(line, x, y); line = words[n] + ' '; y += lineHeight; } 
+        else { line = testLine; }
     }
     context.fillText(line, x, y);
 }
 
 function formatarTempo(segundos) {
-    let m = Math.floor(segundos / 60);
-    let s = segundos % 60;
+    let m = Math.floor(segundos / 60); let s = segundos % 60;
     return `${m < 10 ? '0':''}${m}:${s < 10 ? '0':''}${s}`;
 }
 
 function update() {
     if (estadoJogo === "EXPLORANDO" && !cadernoAberto) {
         let andando = keys["ArrowUp"] || keys["ArrowDown"] || keys["ArrowLeft"] || keys["ArrowRight"];
-        
-        if (andando) {
-            if (somPassos.paused) somPassos.play().catch(() => {});
-        } else {
-            somPassos.pause();
-        }
+        if (andando) { if (somPassos.paused) somPassos.play().catch(() => {}); } else { somPassos.pause(); }
 
-        if (keys["ArrowUp"]) detetive.y -= detetive.speed;
-        if (keys["ArrowDown"]) detetive.y += detetive.speed;
-        if (keys["ArrowLeft"]) detetive.x -= detetive.speed;
-        if (keys["ArrowRight"]) detetive.x += detetive.speed;
+        if (keys["ArrowUp"]) detetive.y -= detetive.speed; if (keys["ArrowDown"]) detetive.y += detetive.speed;
+        if (keys["ArrowLeft"]) detetive.x -= detetive.speed; if (keys["ArrowRight"]) detetive.x += detetive.speed;
 
-        if (detetive.x < 0) detetive.x = 0;
-        if (detetive.y < 0) detetive.y = 0;
+        if (detetive.x < 0) detetive.x = 0; if (detetive.y < 0) detetive.y = 0;
         if (detetive.x + detetive.w > canvas.width) detetive.x = canvas.width - detetive.w;
         if (detetive.y + detetive.h > canvas.height) detetive.y = canvas.height - detetive.h;
-    } else {
-        somPassos.pause(); 
-    }
+    } else { somPassos.pause(); }
 }
 
 function draw() {
@@ -417,14 +418,24 @@ function draw() {
         
         let txtOriginal = estadoJogo === "INTRO" ? textosIntro[introFase] : textosTransicao[transicaoFase];
         if (charIndex < txtOriginal.length) charIndex += textSpeed;
-        let textoParcial = txtOriginal.substring(0, Math.floor(charIndex));
-
-        wrapText(ctx, textoParcial, canvas.width / 2, canvas.height / 2 - 60, 1000, 45);
+        wrapText(ctx, txtOriginal.substring(0, Math.floor(charIndex)), canvas.width / 2, canvas.height / 2 - 60, 1000, 45);
         
         ctx.fillStyle = "#64ffda"; ctx.font = "20px Arial";
         ctx.fillText("[ Aperte A (ou ESPAÇO) para continuar ]", canvas.width / 2, canvas.height - 80);
-        ctx.textAlign = "left"; 
-        requestAnimationFrame(gameLoop); return; 
+        ctx.textAlign = "left"; requestAnimationFrame(gameLoop); return; 
+    }
+
+    if (estadoJogo === "EXPLICACAO_FINAL") {
+        ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "32px Arial";
+        
+        let txtOriginal = textosExplicacao[explicacaoFase];
+        if (charIndex < txtOriginal.length) charIndex += textSpeed;
+        wrapText(ctx, txtOriginal.substring(0, Math.floor(charIndex)), canvas.width / 2, canvas.height / 2 - 30, 1000, 45);
+        
+        ctx.fillStyle = "#64ffda"; ctx.font = "20px Arial";
+        ctx.fillText("[ Aperte A (ou ESPAÇO) para continuar ]", canvas.width / 2, canvas.height - 80);
+        ctx.textAlign = "left"; requestAnimationFrame(gameLoop); return; 
     }
 
     if (estadoJogo === "FIM_TEMPO") {
@@ -435,11 +446,10 @@ function draw() {
         ctx.fillText("O trem das 18h partiu. O culpado conseguiu fugir da cidade...", canvas.width / 2, canvas.height / 2 + 30);
         ctx.fillStyle = "#64ffda"; ctx.font = "bold 20px sans-serif";
         ctx.fillText(">> Atualize a página para tentar novamente <<", canvas.width / 2, canvas.height / 2 + 100);
-        ctx.textAlign = "left"; 
-        requestAnimationFrame(gameLoop); return;
+        ctx.textAlign = "left"; requestAnimationFrame(gameLoop); return;
     }
 
-    if (estadoJogo === "ACUSACAO") {
+    if (estadoJogo === "ACUSACAO" || estadoJogo === "CONFIRMACAO") {
         ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         if (inteImg.complete && inteImg.naturalWidth > 0) {
             let imgW = 800; let imgH = 450; 
@@ -453,200 +463,155 @@ function draw() {
             ctx.fillStyle = "#ffe600"; ctx.font = "bold 32px Arial";
             ctx.fillText("Acusar: " + suspeitosNomes[suspeitoSelecionado], canvas.width / 2, startY + imgH + 60);
             ctx.fillStyle = "#64ffda"; ctx.font = "22px Arial";
-            ctx.fillText("Use SETAS para escolher e A/ESPAÇO para confirmar", canvas.width / 2, startY + imgH + 110);
+            ctx.fillText("Use SETAS para escolher e A/ESPAÇO para acusar", canvas.width / 2, startY + imgH + 110);
         }
+
+        // Desenha a caixa de Confirmação por cima
+        if (estadoJogo === "CONFIRMACAO") {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.9)"; ctx.fillRect(0, 0, canvas.width, canvas.height); // escurece o fundo
+            
+            let cx = canvas.width / 2; let cy = canvas.height / 2;
+            ctx.fillStyle = "#1e293b"; ctx.fillRect(cx - 300, cy - 150, 600, 300);
+            ctx.strokeStyle = "#ffe600"; ctx.lineWidth = 4; ctx.strokeRect(cx - 300, cy - 150, 600, 300);
+            
+            ctx.fillStyle = "white"; ctx.font = "bold 32px Arial";
+            ctx.fillText(`Você tem certeza que quer acusar ${suspeitosNomes[suspeitoSelecionado]}?`, cx, cy - 60);
+            
+            let corProvas = pistasColetadas === totalPistas ? "#64ffda" : "#ff4444";
+            ctx.fillStyle = corProvas; ctx.font = "bold 26px Arial";
+            ctx.fillText(`Provas encontradas: ${pistasColetadas}/${totalPistas}`, cx, cy);
+            
+            ctx.fillStyle = "white"; ctx.font = "22px Arial";
+            ctx.fillText("[ 1 ] SIM, Tenho certeza", cx, cy + 70);
+            ctx.fillText("[ 2 ] NÃO, Voltar para seleção", cx, cy + 110);
+        }
+
         ctx.textAlign = "left"; requestAnimationFrame(gameLoop); return;
     }
 
-    if (mapaImg.complete && mapaImg.naturalWidth > 0) {
-        ctx.drawImage(mapaImg, 0, 0, canvas.width, canvas.height);
-    } else {
-        ctx.fillStyle = "#333"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+    if (mapaImg.complete && mapaImg.naturalWidth > 0) { ctx.drawImage(mapaImg, 0, 0, canvas.width, canvas.height); } 
+    else { ctx.fillStyle = "#333"; ctx.fillRect(0, 0, canvas.width, canvas.height); }
 
     for (let item of itensCenario) {
         if (!item.coletado) {
-            ctx.fillStyle = "gold"; ctx.beginPath();
-            ctx.arc(item.x + item.w/2, item.y + item.h/2, 20, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "gold"; ctx.beginPath(); ctx.arc(item.x + item.w/2, item.y + item.h/2, 20, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = "black"; ctx.font = "bold 24px Arial"; ctx.fillText("?", item.x + 13, item.y + 28);
         }
     }
 
     for (let npc of npcs) {
         if (npc.img.complete && npc.img.naturalWidth > 0) { ctx.drawImage(npc.img, npc.x, npc.y, npc.w, npc.h); }
-        if (npc.tipo === "testemunha" && !npc.pistaColetada) {
-            ctx.fillStyle = "yellow"; ctx.font = "bold 35px Arial"; ctx.fillText("!", npc.x + 35, npc.y - 5);
-        }
+        if (npc.tipo === "testemunha" && !npc.pistaColetada) { ctx.fillStyle = "yellow"; ctx.font = "bold 35px Arial"; ctx.fillText("!", npc.x + 35, npc.y - 5); }
     }
 
-    if (detetiveImg.complete && detetiveImg.naturalWidth > 0) {
-        ctx.drawImage(detetiveImg, detetive.x, detetive.y, detetive.w, detetive.h);
-    }
+    if (detetiveImg.complete && detetiveImg.naturalWidth > 0) { ctx.drawImage(detetiveImg, detetive.x, detetive.y, detetive.w, detetive.h); }
 
-    // --- LANTERNA ---
     ctx.save();
     let lanternaCanvas = document.createElement('canvas');
     lanternaCanvas.width = canvas.width; lanternaCanvas.height = canvas.height;
     let lCtx = lanternaCanvas.getContext('2d');
     lCtx.fillStyle = "rgba(0, 0, 0, 0.75)"; lCtx.fillRect(0, 0, canvas.width, canvas.height);
-    
     lCtx.globalCompositeOperation = 'destination-out';
-    let raioLanterna = 190; 
-    let centroX = detetive.x + detetive.w / 2;
-    let centroY = detetive.y + detetive.h / 2;
-    
+    let raioLanterna = 190; let centroX = detetive.x + detetive.w / 2; let centroY = detetive.y + detetive.h / 2;
     let gradiente = lCtx.createRadialGradient(centroX, centroY, 50, centroX, centroY, raioLanterna);
-    gradiente.addColorStop(0, 'rgba(0,0,0,1)');
-    gradiente.addColorStop(1, 'rgba(0,0,0,0)');
-    lCtx.fillStyle = gradiente; lCtx.beginPath();
-    lCtx.arc(centroX, centroY, raioLanterna, 0, Math.PI * 2); lCtx.fill();
-    
-    ctx.drawImage(lanternaCanvas, 0, 0);
-    ctx.restore();
+    gradiente.addColorStop(0, 'rgba(0,0,0,1)'); gradiente.addColorStop(1, 'rgba(0,0,0,0)');
+    lCtx.fillStyle = gradiente; lCtx.beginPath(); lCtx.arc(centroX, centroY, raioLanterna, 0, Math.PI * 2); lCtx.fill();
+    ctx.drawImage(lanternaCanvas, 0, 0); ctx.restore();
 
-    // --- EFEITO DE TENSÃO (TELA AVERMELHADA) ---
     if (tempoRestante <= 30 && (estadoJogo === "EXPLORANDO" || estadoJogo === "DIALOGO")) {
-        // Cria um efeito de piscar suave usando o tempo
         let alpha = 0.15 + Math.sin(Date.now() / 200) * 0.05; 
-        ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
     if (estadoJogo === "EXPLORANDO" && !cadernoAberto) {
         let hitboxInteracao = { x: detetive.x - 25, y: detetive.y - 25, w: detetive.w + 50, h: detetive.h + 50 };
         let pertoNPC = npcs.find(n => colidindo(hitboxInteracao, n));
         let pertoItem = itensCenario.find(i => colidindo(hitboxInteracao, i) && !i.coletado);
-        
         if (pertoNPC || pertoItem) {
             ctx.fillStyle = "rgba(0,0,0,0.85)"; ctx.fillRect(detetive.x - 20, detetive.y - 45, 130, 30);
             ctx.fillStyle = "white"; ctx.font = "bold 13px sans-serif"; ctx.fillText("Botão A / ESPAÇO", detetive.x - 12, detetive.y - 25);
         }
     }
 
-    // --- HUD: AVISOS DO SISTEMA ---
     if (avisoSistema !== "" && timerAviso > 0 && !cadernoAberto) {
-        ctx.fillStyle = "rgba(255, 50, 50, 0.9)";
-        ctx.fillRect(canvas.width / 2 - 350, 80, 700, 50);
+        ctx.fillStyle = "rgba(255, 50, 50, 0.9)"; ctx.fillRect(canvas.width / 2 - 350, 80, 700, 50);
         ctx.strokeStyle = "white"; ctx.lineWidth = 3; ctx.strokeRect(canvas.width / 2 - 350, 80, 700, 50);
         ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "bold 22px Arial";
-        ctx.fillText("⚠️ " + avisoSistema, canvas.width / 2, 113);
-        ctx.textAlign = "left"; // Reseta o alinhamento
+        ctx.fillText("⚠️ " + avisoSistema, canvas.width / 2, 113); ctx.textAlign = "left"; 
     }
 
-    // HUD: Contador Provas
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(20, 20, 200, 45); 
     ctx.strokeStyle = "#64ffda"; ctx.lineWidth = 2; ctx.strokeRect(20, 20, 200, 45);
-    ctx.fillStyle = "#64ffda"; ctx.font = "bold 18px sans-serif";
-    ctx.fillText("🔎 Provas: " + pistasColetadas + " / " + totalPistas, 45, 48);
+    ctx.fillStyle = "#64ffda"; ctx.font = "bold 18px sans-serif"; ctx.fillText("🔎 Provas: " + pistasColetadas + " / " + totalPistas, 45, 48);
 
-    // HUD: Dica
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(235, 20, 280, 45);
     ctx.strokeStyle = "#ffe600"; ctx.lineWidth = 2; ctx.strokeRect(235, 20, 280, 45);
-    ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; 
-    ctx.fillText("📓 Aperte [ C ] para o Caderno", 255, 48);
+    ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.fillText("📓 Aperte [ C ] para o Caderno", 255, 48);
 
-    // HUD: Relógio
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(canvas.width - 220, 20, 180, 45);
     let corTempo = tempoRestante <= 30 ? "#ff4444" : "#64ffda";
     ctx.strokeStyle = corTempo; ctx.lineWidth = 2; ctx.strokeRect(canvas.width - 220, 20, 180, 45);
-    ctx.fillStyle = corTempo; ctx.font = "bold 20px Arial";
-    ctx.fillText("⏳ Tempo: " + formatarTempo(tempoRestante), canvas.width - 200, 48);
+    ctx.fillStyle = corTempo; ctx.font = "bold 20px Arial"; ctx.fillText("⏳ Tempo: " + formatarTempo(tempoRestante), canvas.width - 200, 48);
 
-    // --- TELA DO CADERNO ---
     if (cadernoAberto) {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.8)"; 
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        let cX = canvas.width / 2 - 350;
-        let cY = 100;
-        
-        ctx.fillStyle = "#fef3c7"; ctx.fillRect(cX, cY, 700, 500);
-        ctx.strokeStyle = "#8b5a2b"; ctx.lineWidth = 6; ctx.strokeRect(cX, cY, 700, 500);
-
+        ctx.fillStyle = "rgba(0, 0, 0, 0.8)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        let cX = canvas.width / 2 - 350; let cY = 100;
+        ctx.fillStyle = "#fef3c7"; ctx.fillRect(cX, cY, 700, 500); ctx.strokeStyle = "#8b5a2b"; ctx.lineWidth = 6; ctx.strokeRect(cX, cY, 700, 500);
         ctx.fillStyle = "#8b5a2b"; ctx.fillRect(cX, cY, 40, 500);
         for(let i=0; i<10; i++) {
-            ctx.fillStyle = "white"; ctx.beginPath();
-            ctx.arc(cX + 20, cY + 40 + (i*45), 10, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.beginPath();
-            ctx.arc(cX + 20, cY + 40 + (i*45), 10, 0, Math.PI * 2); ctx.stroke();
+            ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(cX + 20, cY + 40 + (i*45), 10, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.beginPath(); ctx.arc(cX + 20, cY + 40 + (i*45), 10, 0, Math.PI * 2); ctx.stroke();
         }
-
-        ctx.fillStyle = "black"; ctx.font = "bold 32px Arial"; ctx.fillText("📓 Caderno de Anotações", cX + 60, cY + 50);
-        ctx.fillRect(cX + 60, cY + 65, 600, 2);
-
+        ctx.fillStyle = "black"; ctx.font = "bold 32px Arial"; ctx.fillText("📓 Caderno de Anotações", cX + 60, cY + 50); ctx.fillRect(cX + 60, cY + 65, 600, 2);
         ctx.font = "20px Arial"; let yPista = cY + 110;
-        
-        if (anotacoes.length === 0) {
-            ctx.fillStyle = "#555"; ctx.fillText("Nenhuma pista anotada ainda. Investigue a cidade!", cX + 60, yPista);
-        } else {
-            ctx.fillStyle = "#1e293b";
-            for (let i = 0; i < anotacoes.length; i++) {
-                ctx.fillText("•", cX + 60, yPista); wrapText(ctx, anotacoes[i], cX + 80, yPista, 560, 28); yPista += 60; 
-            }
-        }
+        if (anotacoes.length === 0) { ctx.fillStyle = "#555"; ctx.fillText("Nenhuma pista anotada ainda. Investigue a cidade!", cX + 60, yPista); } 
+        else { ctx.fillStyle = "#1e293b"; for (let i = 0; i < anotacoes.length; i++) { ctx.fillText("•", cX + 60, yPista); wrapText(ctx, anotacoes[i], cX + 80, yPista, 560, 28); yPista += 60; } }
         ctx.fillStyle = "#555"; ctx.font = "italic 18px Arial"; ctx.fillText("[ Aperte C ou ESPAÇO para fechar ]", cX + 60, cY + 470);
     }
 
-    // Diálogos Gerais
     if (estadoJogo === "DIALOGO" && !cadernoAberto) {
         ctx.fillStyle = "rgba(15, 23, 42, 0.95)"; ctx.fillRect(154, 540, 1100, 180);
         ctx.strokeStyle = npcFoco.tipo === "sistema" ? "#ffe600" : "#64ffda"; ctx.lineWidth = 4; ctx.strokeRect(154, 540, 1100, 180);
         ctx.fillStyle = npcFoco.tipo === "sistema" ? "#ffe600" : "#64ffda"; ctx.font = "bold 26px Arial"; ctx.fillText(npcFoco.nome + ":", 190, 585);
         ctx.fillStyle = "white"; ctx.font = "21px Arial";
-
         if (textoResposta !== "") {
             if (charIndex < textoResposta.length) charIndex += textSpeed;
-            let msgParcial = textoResposta.substring(0, Math.floor(charIndex));
-            wrapText(ctx, msgParcial, 190, 635, 1000, 30);
-            if (charIndex >= textoResposta.length) {
-                ctx.fillStyle = "#94a3b8"; ctx.font = "16px Arial"; ctx.fillText("[ Aperte A (ou ESPAÇO) para fechar ]", 190, 700);
-            }
+            wrapText(ctx, textoResposta.substring(0, Math.floor(charIndex)), 190, 635, 1000, 30);
+            if (charIndex >= textoResposta.length) { ctx.fillStyle = "#94a3b8"; ctx.font = "16px Arial"; ctx.fillText("[ Aperte A (ou ESPAÇO) para fechar ]", 190, 700); }
         } else if (npcFoco.tipo !== "sistema") {
             ctx.fillStyle = "#e2e8f0"; ctx.fillText("Escolha o que perguntar (botões 1 ou 2):", 190, 625);
             ctx.fillStyle = npcFoco.tipo === "rival" ? "#ff4444" : "#64ffda"; 
-            ctx.fillText(npcFoco.pergunta1, 210, 665); 
-            ctx.fillText(npcFoco.pergunta2, 210, 695);
+            ctx.fillText(npcFoco.pergunta1, 210, 665); ctx.fillText(npcFoco.pergunta2, 210, 695);
         }
     }
 
-    // Diálogo Exclusivo do Rival
     if (estadoJogo === "RIVAL_DIALOGO" && !cadernoAberto) {
         ctx.fillStyle = "rgba(15, 23, 42, 0.95)"; ctx.fillRect(154, 540, 1100, 180);
         ctx.strokeStyle = "#ff4444"; ctx.lineWidth = 4; ctx.strokeRect(154, 540, 1100, 180);
         ctx.fillStyle = "#ff4444"; ctx.font = "bold 26px Arial"; ctx.fillText("Rival:", 190, 585);
         ctx.fillStyle = "white"; ctx.font = "21px Arial";
-        
         let txtOriginal = textosRival[falaRival];
         if (charIndex < txtOriginal.length) charIndex += textSpeed;
         wrapText(ctx, txtOriginal.substring(0, Math.floor(charIndex)), 190, 625, 1000, 30);
-        
-        if (charIndex >= txtOriginal.length) {
-            ctx.fillStyle = "#94a3b8"; ctx.font = "16px Arial"; ctx.fillText("[ Aperte A (ou ESPAÇO) para continuar ]", 190, 700);
-        }
+        if (charIndex >= txtOriginal.length) { ctx.fillStyle = "#94a3b8"; ctx.font = "16px Arial"; ctx.fillText("[ Aperte A (ou ESPAÇO) para continuar ]", 190, 700); }
     }
 
-    // TELA DE FINAIS
     if (estadoJogo === "FIM") {
         ctx.fillStyle = "rgba(0, 15, 5, 0.95)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.textAlign = "center"; 
         
         if (suspeitoSelecionado === 0 && pistasColetadas >= totalPistas) { 
-            ctx.fillStyle = "#ffe600"; ctx.font = "bold 65px sans-serif"; ctx.fillText("🏆 FINAL VERDADEIRO", canvas.width / 2, canvas.height / 2 - 40);
-            ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Com todas as provas, você expôs as mentiras do Rival!", canvas.width / 2, canvas.height / 2 + 20);
-            ctx.fillText("Ele confessou o crime e Tião foi inocentado!", canvas.width / 2, canvas.height / 2 + 60);
+            ctx.fillStyle = "#ffe600"; ctx.font = "bold 70px sans-serif"; ctx.fillText("🏆 FINAL VERDADEIRO", canvas.width / 2, canvas.height / 2 - 20);
         } else if (suspeitoSelecionado === 0 && pistasColetadas < totalPistas) {
-            ctx.fillStyle = "#a8a8a8"; ctx.font = "bold 65px sans-serif"; ctx.fillText("⚖️ FINAL NEUTRO", canvas.width / 2, canvas.height / 2 - 40);
-            ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você deduziu que o Rival era o culpado, mas acusou sem reunir todas as provas.", canvas.width / 2, canvas.height / 2 + 20);
-            ctx.fillText("Os advogados dele o livraram e o caso foi encerrado sem prisões.", canvas.width / 2, canvas.height / 2 + 60);
+            ctx.fillStyle = "#a8a8a8"; ctx.font = "bold 70px sans-serif"; ctx.fillText("⚖️ FINAL NEUTRO", canvas.width / 2, canvas.height / 2 - 20);
         } else if (suspeitoSelecionado === 2) {
-            ctx.fillStyle = "#b5179e"; ctx.font = "bold 65px sans-serif"; ctx.fillText("🤫 FINAL SECRETO", canvas.width / 2, canvas.height / 2 - 40);
-            ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você apontou para o Padre! Todos ficaram em choque com a acusação...", canvas.width / 2, canvas.height / 2 + 20);
-            ctx.fillText("Chorando, ele confessou que roubou o relógio para pagar as dívidas da igreja!", canvas.width / 2, canvas.height / 2 + 60);
+            ctx.fillStyle = "#b5179e"; ctx.font = "bold 70px sans-serif"; ctx.fillText("🤫 FINAL SECRETO", canvas.width / 2, canvas.height / 2 - 20);
         } else {
-            ctx.fillStyle = "#ff4444"; ctx.font = "bold 65px sans-serif"; ctx.fillText("❌ FINAL RUIM", canvas.width / 2, canvas.height / 2 - 40);
-            ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você acusou " + suspeitosNomes[suspeitoSelecionado] + ", que não cometeu o crime!", canvas.width / 2, canvas.height / 2 + 20);
-            ctx.fillText("Enquanto um inocente foi preso, o verdadeiro culpado fugiu com a relíquia...", canvas.width / 2, canvas.height / 2 + 60);
+            ctx.fillStyle = "#ff4444"; ctx.font = "bold 70px sans-serif"; ctx.fillText("❌ FINAL RUIM", canvas.width / 2, canvas.height / 2 - 20);
         }
+        
+        ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; 
+        ctx.fillText("FIM DE JOGO", canvas.width / 2, canvas.height / 2 + 50);
         ctx.fillStyle = "#64ffda"; ctx.font = "bold 20px sans-serif"; ctx.fillText(">> Atualize a página para jogar novamente <<", canvas.width / 2, canvas.height / 2 + 150);
         ctx.textAlign = "left"; 
     }
