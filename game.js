@@ -90,7 +90,7 @@ let npcs = [
     { nome: "Dona Maria", img: mariaImg, x: 1150, y: 550, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. O que encontrou na casa do Tião?", resposta1: "Achei uma luva de luxo perto da janela do Tião. Ele não tem dinheiro pra isso.", daPista1: true, pergunta2: "2. Tião tem inimigos?", resposta2: "Apenas o Rival. Brigaram por terras.", daPista2: false },
     { nome: "Padre", img: padreImg, x: 1050, y: 250, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. O que o Tião fazia na hora do crime?", resposta1: "Ele estava comigo na igreja, ajudando a limpar.", daPista1: false, pergunta2: "2. O Rival tem se confessado?", resposta2: "Sim, confessou um plano terrível contra o Tião na semana passada.", daPista2: true },
     { nome: "Tião", img: tiaoImg, x: 660, y: 600, w: 85, h: 85, tipo: "aliado", pistaColetada: false, pergunta1: "1. Fique calmo, vou te tirar dessa.", resposta1: "Obrigado, detetive! Confio na sua investigação.", daPista1: false, pergunta2: "2. Quem te incriminou?", resposta2: "Só pode ser o engravatado do Rival!", daPista2: false },
-    { nome: "Rival", img: rivalImg, x: 150, y: 550, w: 85, h: 85, tipo: "rival" }
+    { nome: "Rival", img: rivalImg, x: 150, y: 550, w: 85, h: 85, tipo: "rival", pistaColetada: false, pergunta1: "1. ACUSAÇÃO FINAL (Encerrar investigação)", resposta1: "", daPista1: false, pergunta2: "2. Ainda estou investigando (Sair)", resposta2: "Não me faça perder tempo com suas acusações infundadas!", daPista2: false }
 ];
 
 let itensCenario = [
@@ -176,19 +176,7 @@ function acionarAcao(tecla) {
             somClick.play();
             npcFoco = pertoNPC;
             textoResposta = ""; charIndex = 0;
-            
-            if (npcFoco.tipo === "rival") {
-                if (pistasColetadas >= totalPistas) {
-                    estadoJogo = "RIVAL_DIALOGO"; falaRival = 0; charIndex = 0;
-                } else {
-                    estadoJogo = "DIALOGO";
-                    let itensNaMochila = itensCenario.filter(i => i.coletado).map(i => i.nome).join(", ") || "Nenhum objeto";
-                    let depoimentosNaMochila = npcs.filter(n => n.pistaColetada).map(n => n.nome).join(", ") || "Nenhum depoimento";
-                    textoResposta = `RIVAL: Saia daqui! Você ainda não tem todas as provas! [MOCHILA ATUAL: Itens: ${itensNaMochila} | Depoimentos de: ${depoimentosNaMochila}]`;
-                }
-            } else {
-                estadoJogo = "DIALOGO";
-            }
+            estadoJogo = "DIALOGO";
         } else if (pertoItem) {
             somPista.play();
             pertoItem.coletado = true;
@@ -208,11 +196,15 @@ function acionarAcao(tecla) {
         }
     }
 
-    if (estadoJogo === "DIALOGO" && textoResposta === "" && npcFoco && npcFoco.tipo !== "rival" && npcFoco.tipo !== "sistema") {
+    if (estadoJogo === "DIALOGO" && textoResposta === "" && npcFoco && npcFoco.tipo !== "sistema") {
         if (tecla === "1") {
             somClick.play();
-            textoResposta = npcFoco.resposta1; charIndex = 0;
-            if (npcFoco.daPista1 && !npcFoco.pistaColetada) { pistasColetadas++; npcFoco.pistaColetada = true; }
+            if (npcFoco.tipo === "rival") {
+                estadoJogo = "RIVAL_DIALOGO"; falaRival = 0; charIndex = 0;
+            } else {
+                textoResposta = npcFoco.resposta1; charIndex = 0;
+                if (npcFoco.daPista1 && !npcFoco.pistaColetada) { pistasColetadas++; npcFoco.pistaColetada = true; }
+            }
         }
         if (tecla === "2") {
             somClick.play();
@@ -486,7 +478,7 @@ function draw() {
             if (charIndex >= textoResposta.length) {
                 ctx.fillStyle = "#94a3b8"; ctx.font = "16px Arial"; ctx.fillText("[ Aperte A (ou ESPAÇO) para fechar ]", 190, 700);
             }
-        } else if (npcFoco.tipo !== "rival" && npcFoco.tipo !== "sistema") {
+        } else if (npcFoco.tipo !== "sistema") {
             ctx.fillStyle = "#e2e8f0"; ctx.fillText("Escolha o que perguntar (botões 1 ou 2):", 190, 625);
             ctx.fillStyle = "#64ffda"; ctx.fillText(npcFoco.pergunta1, 210, 665); ctx.fillText(npcFoco.pergunta2, 210, 695);
         }
@@ -511,14 +503,27 @@ function draw() {
     if (estadoJogo === "FIM") {
         ctx.fillStyle = "rgba(0, 15, 5, 0.95)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.textAlign = "center"; 
-        if (suspeitoSelecionado === 0) { 
-            ctx.fillStyle = "#ffe600"; ctx.font = "bold 70px sans-serif"; ctx.fillText("🏆 VOCÊ VENCEU!", canvas.width / 2, canvas.height / 2 - 30);
-            ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Parabéns, detetive! Apesar da história comovente,", canvas.width / 2, canvas.height / 2 + 30);
-            ctx.fillText("as pistas provaram que o Rival era o verdadeiro culpado!", canvas.width / 2, canvas.height / 2 + 70);
+        
+        if (suspeitoSelecionado === 0 && pistasColetadas >= totalPistas) { 
+            // Final Verdadeiro
+            ctx.fillStyle = "#ffe600"; ctx.font = "bold 65px sans-serif"; ctx.fillText("🏆 FINAL VERDADEIRO", canvas.width / 2, canvas.height / 2 - 40);
+            ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Com todas as provas em mãos, você expôs as mentiras do Rival!", canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText("Sem ter como escapar, ele confessou o crime. Tião foi inocentado!", canvas.width / 2, canvas.height / 2 + 60);
+        } else if (suspeitoSelecionado === 0 && pistasColetadas < totalPistas) {
+            // Final Neutro
+            ctx.fillStyle = "#a8a8a8"; ctx.font = "bold 65px sans-serif"; ctx.fillText("⚖️ FINAL NEUTRO", canvas.width / 2, canvas.height / 2 - 40);
+            ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você deduziu que o Rival era o culpado, mas acusou sem reunir as provas.", canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText("Os advogados dele o livraram com facilidade e o caso foi encerrado sem prisões.", canvas.width / 2, canvas.height / 2 + 60);
+        } else if (suspeitoSelecionado === 2) {
+            // Final Secreto (O Padre)
+            ctx.fillStyle = "#b5179e"; ctx.font = "bold 65px sans-serif"; ctx.fillText("🤫 FINAL SECRETO", canvas.width / 2, canvas.height / 2 - 40);
+            ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você apontou para o Padre! Todos ficaram em choque com a acusação...", canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText("Chorando, ele confessou que roubou o relógio para pagar as dívidas da igreja!", canvas.width / 2, canvas.height / 2 + 60);
         } else {
-            ctx.fillStyle = "#ff4444"; ctx.font = "bold 70px sans-serif"; ctx.fillText("❌ ACUSAÇÃO INCORRETA", canvas.width / 2, canvas.height / 2 - 30);
-            ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você acusou a pessoa errada! O verdadeiro culpado escapou", canvas.width / 2, canvas.height / 2 + 30);
-            ctx.fillText("e um inocente pagou pelo crime. O mistério continua...", canvas.width / 2, canvas.height / 2 + 70);
+            // Final Ruim (Inocente)
+            ctx.fillStyle = "#ff4444"; ctx.font = "bold 65px sans-serif"; ctx.fillText("❌ FINAL RUIM", canvas.width / 2, canvas.height / 2 - 40);
+            ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você acusou " + suspeitosNomes[suspeitoSelecionado] + ", que não cometeu o crime!", canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText("Enquanto um inocente foi preso, o verdadeiro culpado fugiu com a relíquia...", canvas.width / 2, canvas.height / 2 + 60);
         }
         
         ctx.fillStyle = "rgba(255, 255, 255, 0.4)"; ctx.font = "16px Arial";
