@@ -66,6 +66,10 @@ let textoResposta = "";
 let pistasColetadas = 0;
 let totalPistas = 4; 
 
+// --- CADERNO DO DETETIVE ---
+let cadernoAberto = false;
+let anotacoes = [];
+
 let charIndex = 0;
 let textSpeed = 1.5; 
 
@@ -73,7 +77,8 @@ let tempoMaximo = 180;
 let tempoRestante = tempoMaximo;
 
 let timerJogo = setInterval(() => {
-    if (estadoJogo === "EXPLORANDO" || estadoJogo === "DIALOGO" || estadoJogo === "RIVAL_DIALOGO") {
+    // Só consome tempo se não estiver lendo o caderno
+    if (!cadernoAberto && (estadoJogo === "EXPLORANDO" || estadoJogo === "DIALOGO" || estadoJogo === "RIVAL_DIALOGO")) {
         if (tempoRestante > 0) {
             tempoRestante--;
         } else {
@@ -85,17 +90,16 @@ let timerJogo = setInterval(() => {
 // --- PERSONAGENS ---
 let detetive = { x: 660, y: 350, w: 85, h: 85, speed: 6 };
 
-// O Rival agora tem opções normais de diálogo para você poder encerrar o jogo sem ter as provas
 let npcs = [
-    { nome: "Seu Zé", img: zeImg, x: 250, y: 280, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. Viu algo estranho na noite do roubo?", resposta1: "Vi o Rival correndo pra mata com um saco de moedas!", daPista1: true, pergunta2: "2. Como é o Tião?", resposta2: "Tião é trabalhador, nunca roubou.", daPista2: false },
-    { nome: "Dona Maria", img: mariaImg, x: 1150, y: 550, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. O que encontrou na casa do Tião?", resposta1: "Achei uma luva de luxo perto da janela do Tião. Ele não tem dinheiro pra isso.", daPista1: true, pergunta2: "2. Tião tem inimigos?", resposta2: "Apenas o Rival. Brigaram por terras.", daPista2: false },
-    { nome: "Padre", img: padreImg, x: 1050, y: 250, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. O que o Tião fazia na hora do crime?", resposta1: "Ele estava comigo na igreja, ajudando a limpar.", daPista1: false, pergunta2: "2. O Rival tem se confessado?", resposta2: "Sim, confessou um plano terrível contra o Tião na semana passada.", daPista2: true },
+    { nome: "Seu Zé", img: zeImg, x: 250, y: 280, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. Viu algo estranho na noite do roubo?", resposta1: "Vi o Rival correndo pra mata com um saco de moedas!", daPista1: true, textoPista1: "Rival foi visto correndo para a mata com um saco suspeito.", pergunta2: "2. Como é o Tião?", resposta2: "Tião é trabalhador, nunca roubou.", daPista2: false },
+    { nome: "Dona Maria", img: mariaImg, x: 1150, y: 550, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. O que encontrou na casa do Tião?", resposta1: "Achei uma luva de luxo perto da janela do Tião. Ele não tem dinheiro pra isso.", daPista1: true, textoPista1: "Luva de luxo encontrada perto da casa do Tião.", pergunta2: "2. Tião tem inimigos?", resposta2: "Apenas o Rival. Brigaram por terras.", daPista2: false },
+    { nome: "Padre", img: padreImg, x: 1050, y: 250, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. O que o Tião fazia na hora do crime?", resposta1: "Ele estava comigo na igreja, ajudando a limpar.", daPista1: false, pergunta2: "2. O Rival tem se confessado?", resposta2: "Sim, confessou um plano terrível contra o Tião na semana passada.", daPista2: true, textoPista2: "Padre revelou que o Rival armou um plano contra Tião." },
     { nome: "Tião", img: tiaoImg, x: 660, y: 600, w: 85, h: 85, tipo: "aliado", pistaColetada: false, pergunta1: "1. Fique calmo, vou te tirar dessa.", resposta1: "Obrigado, detetive! Confio na sua investigação.", daPista1: false, pergunta2: "2. Quem te incriminou?", resposta2: "Só pode ser o engravatado do Rival!", daPista2: false },
     { nome: "Rival", img: rivalImg, x: 150, y: 550, w: 85, h: 85, tipo: "rival", pistaColetada: false, pergunta1: "1. ESTOU PRONTO PARA ACUSAR ALGUÉM", resposta1: "", daPista1: false, pergunta2: "2. Ainda estou investigando (Sair)", resposta2: "Então não me faça perder tempo com suas presenças insolentes!", daPista2: false }
 ];
 
 let itensCenario = [
-    { nome: "Lenço de Seda", icone: "🧣", x: 850, y: 150, w: 40, h: 40, coletado: false }
+    { nome: "Lenço de Seda", icone: "🧣", x: 850, y: 150, w: 40, h: 40, coletado: false, textoPista: "Lenço de seda sujo de barro com marcas de sapato caro ao lado." }
 ];
 
 let falaRival = 0;
@@ -136,6 +140,24 @@ function acionarAcao(tecla) {
             somClick.play();
             introFase++; charIndex = 0;
             if (introFase >= textosIntro.length) estadoJogo = "EXPLORANDO";
+        }
+        return; 
+    }
+
+    // Controle do Caderno do Detetive (abre com C)
+    if (tecla.toLowerCase() === "c") {
+        if (estadoJogo === "EXPLORANDO" || cadernoAberto) {
+            somClick.play();
+            cadernoAberto = !cadernoAberto;
+            return;
+        }
+    }
+    
+    // Se o caderno estiver aberto, bloqueia outras ações
+    if (cadernoAberto) {
+        if (tecla === " ") { // Permite fechar com Espaço também
+            somClick.play();
+            cadernoAberto = false;
         }
         return; 
     }
@@ -182,9 +204,10 @@ function acionarAcao(tecla) {
             somPista.play();
             pertoItem.coletado = true;
             pistasColetadas++;
+            anotacoes.push(pertoItem.textoPista); // Adiciona ao caderno
             estadoJogo = "DIALOGO";
-            npcFoco = { nome: "MOCHILA DO DETETIVE", tipo: "sistema" };
-            textoResposta = `Você guardou na mochila: ${pertoItem.nome}! Havia marcas de sapato elegante ao lado...`;
+            npcFoco = { nome: "NOVA ANOTAÇÃO", tipo: "sistema" };
+            textoResposta = `Você anotou uma pista no caderno! Aperte C para ler.`;
             charIndex = 0;
         }
     } 
@@ -202,48 +225,57 @@ function acionarAcao(tecla) {
         if (tecla === "1") {
             somClick.play();
             if (npcFoco.tipo === "rival") {
-                // OPÇÃO 1 DO RIVAL: ENCERRA O JOGO E VAI PROS FINAIS
                 estadoJogo = "RIVAL_DIALOGO"; falaRival = 0; charIndex = 0;
             } else {
-                // TESTEMUNHAS E ALIADOS: Dão a pista normalmente
                 textoResposta = npcFoco.resposta1; charIndex = 0;
-                if (npcFoco.daPista1 && !npcFoco.pistaColetada) { pistasColetadas++; npcFoco.pistaColetada = true; }
+                if (npcFoco.daPista1 && !npcFoco.pistaColetada) { 
+                    pistasColetadas++; 
+                    npcFoco.pistaColetada = true; 
+                    if (npcFoco.textoPista1) anotacoes.push(npcFoco.textoPista1);
+                }
             }
         }
         if (tecla === "2") {
             somClick.play();
-            // OPÇÃO 2 PARA QUALQUER NPC
             textoResposta = npcFoco.resposta2; charIndex = 0;
-            if (npcFoco.daPista2 && !npcFoco.pistaColetada) { pistasColetadas++; npcFoco.pistaColetada = true; }
+            if (npcFoco.daPista2 && !npcFoco.pistaColetada) { 
+                pistasColetadas++; 
+                npcFoco.pistaColetada = true; 
+                if (npcFoco.textoPista2) anotacoes.push(npcFoco.textoPista2);
+            }
         }
     }
 }
 
 window.addEventListener("keydown", (e) => {
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "1", "2"].includes(e.key)) { e.preventDefault(); }
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "1", "2", "c", "C"].includes(e.key)) { e.preventDefault(); }
     keys[e.key] = true;
     acionarAcao(e.key);
 });
 window.addEventListener("keyup", (e) => keys[e.key] = false);
 
-// Controles Mobile
-function criarBotaoMobile(txt, left, bottom, right, tamanho, tecla) {
+// Controles Mobile - Nova Versão mais flexível
+function criarBotaoMobile(txt, props, tecla) {
     let btn = document.createElement("div");
     btn.className = "btn-mobile"; 
     btn.innerText = txt;
     btn.style.position = "absolute";
-    if (left !== null) btn.style.left = left;
-    if (right !== null) btn.style.right = right;
-    btn.style.bottom = bottom;
-    btn.style.width = tamanho;
-    btn.style.height = tamanho;
-    btn.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+    
+    if (props.left !== undefined) btn.style.left = props.left;
+    if (props.right !== undefined) btn.style.right = props.right;
+    if (props.bottom !== undefined) btn.style.bottom = props.bottom;
+    if (props.top !== undefined) btn.style.top = props.top;
+    
+    btn.style.width = props.size || "60px";
+    btn.style.height = props.size || "60px";
+    
+    btn.style.backgroundColor = props.bg || "rgba(255, 255, 255, 0.2)";
     btn.style.border = "3px solid rgba(255, 255, 255, 0.6)";
     btn.style.borderRadius = "50%";
     btn.style.color = "white";
     btn.style.alignItems = "center";
     btn.style.justifyContent = "center";
-    btn.style.fontSize = "26px";
+    btn.style.fontSize = props.fontSize || "26px";
     btn.style.fontWeight = "bold";
     btn.style.userSelect = "none";
     btn.style.zIndex = "100";
@@ -257,7 +289,7 @@ function criarBotaoMobile(txt, left, bottom, right, tamanho, tecla) {
     };
     let soltar = (e) => {
         e.preventDefault();
-        btn.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+        btn.style.backgroundColor = props.bg || "rgba(255, 255, 255, 0.2)";
         keys[tecla] = false;
     };
 
@@ -266,13 +298,17 @@ function criarBotaoMobile(txt, left, bottom, right, tamanho, tecla) {
     btn.addEventListener("mouseleave", soltar); document.body.appendChild(btn);
 }
 
-criarBotaoMobile("↑", "90px", "160px", null, "60px", "ArrowUp");
-criarBotaoMobile("↓", "90px", "20px", null, "60px", "ArrowDown");
-criarBotaoMobile("←", "20px", "90px", null, "60px", "ArrowLeft");
-criarBotaoMobile("→", "160px", "90px", null, "60px", "ArrowRight");
-criarBotaoMobile("A", null, "30px", "30px", "80px", " ");
-criarBotaoMobile("1", null, "130px", "120px", "55px", "1");
-criarBotaoMobile("2", null, "130px", "30px", "55px", "2");
+// Botões de movimento
+criarBotaoMobile("↑", {left: "90px", bottom: "160px", size: "60px"}, "ArrowUp");
+criarBotaoMobile("↓", {left: "90px", bottom: "20px", size: "60px"}, "ArrowDown");
+criarBotaoMobile("←", {left: "20px", bottom: "90px", size: "60px"}, "ArrowLeft");
+criarBotaoMobile("→", {left: "160px", bottom: "90px", size: "60px"}, "ArrowRight");
+// Botões de Ação
+criarBotaoMobile("A", {right: "30px", bottom: "30px", size: "80px"}, " ");
+criarBotaoMobile("1", {right: "120px", bottom: "130px", size: "55px"}, "1");
+criarBotaoMobile("2", {right: "30px", bottom: "130px", size: "55px"}, "2");
+// Novo: Botão do Caderno (canto superior direito)
+criarBotaoMobile("📓", {right: "20px", top: "20px", size: "65px", fontSize: "30px", bg: "rgba(100, 255, 218, 0.3)"}, "c");
 
 function colidindo(r1, r2) {
     return (r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y);
@@ -297,7 +333,7 @@ function formatarTempo(segundos) {
 }
 
 function update() {
-    if (estadoJogo === "EXPLORANDO") {
+    if (estadoJogo === "EXPLORANDO" && !cadernoAberto) {
         let andando = keys["ArrowUp"] || keys["ArrowDown"] || keys["ArrowLeft"] || keys["ArrowRight"];
         
         if (andando) {
@@ -423,7 +459,7 @@ function draw() {
     ctx.drawImage(lanternaCanvas, 0, 0);
     ctx.restore();
 
-    if (estadoJogo === "EXPLORANDO") {
+    if (estadoJogo === "EXPLORANDO" && !cadernoAberto) {
         let hitboxInteracao = { x: detetive.x - 25, y: detetive.y - 25, w: detetive.w + 50, h: detetive.h + 50 };
         let pertoNPC = npcs.find(n => colidindo(hitboxInteracao, n));
         let pertoItem = itensCenario.find(i => colidindo(hitboxInteracao, i) && !i.coletado);
@@ -440,26 +476,11 @@ function draw() {
     ctx.fillStyle = "#64ffda"; ctx.font = "bold 18px sans-serif";
     ctx.fillText("🔎 Provas: " + pistasColetadas + " / " + totalPistas, 45, 48);
 
-    // --- INVENTÁRIO VISUAL ---
-    ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(235, 20, 320, 45);
-    ctx.strokeStyle = "#ffe600"; ctx.lineWidth = 2; ctx.strokeRect(235, 20, 320, 45);
-    ctx.fillStyle = "white"; ctx.font = "bold 15px sans-serif"; ctx.fillText("🎒 Bolsa do Detetive:", 250, 48);
-    
-    let posXItem = 405;
-    for (let item of itensCenario) {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.1)"; ctx.fillRect(posXItem, 27, 30, 30);
-        ctx.strokeRect(posXItem, 27, 30, 30);
-        if (item.coletado) { ctx.font = "20px Arial"; ctx.fillText(item.icone, posXItem + 3, 50); }
-        posXItem += 38;
-    }
-    let npcsComPista = npcs.filter(n => n.tipo === "testemunha");
-    for (let npc of npcsComPista) {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.1)"; ctx.fillRect(posXItem, 27, 30, 30);
-        ctx.strokeStyle = npc.pistaColetada ? "#64ffda" : "#ffe600";
-        ctx.strokeRect(posXItem, 27, 30, 30);
-        if (npc.pistaColetada) { ctx.font = "20px Arial"; ctx.fillText("📝", posXItem + 3, 50); }
-        posXItem += 38;
-    }
+    // HUD: Dica de como abrir o Caderno (substitui a mochila)
+    ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(235, 20, 280, 45);
+    ctx.strokeStyle = "#ffe600"; ctx.lineWidth = 2; ctx.strokeRect(235, 20, 280, 45);
+    ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; 
+    ctx.fillText("📓 Aperte [ C ] para o Caderno", 255, 48);
 
     // HUD: Relógio
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(canvas.width - 220, 20, 180, 45);
@@ -468,8 +489,54 @@ function draw() {
     ctx.fillStyle = corTempo; ctx.font = "bold 20px Arial";
     ctx.fillText("⏳ Tempo: " + formatarTempo(tempoRestante), canvas.width - 200, 48);
 
+    // --- TELA DO CADERNO DO DETETIVE ---
+    if (cadernoAberto) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.8)"; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        let cX = canvas.width / 2 - 350;
+        let cY = 100;
+        
+        ctx.fillStyle = "#fef3c7"; 
+        ctx.fillRect(cX, cY, 700, 500);
+        ctx.strokeStyle = "#8b5a2b"; 
+        ctx.lineWidth = 6; 
+        ctx.strokeRect(cX, cY, 700, 500);
+
+        ctx.fillStyle = "#8b5a2b"; ctx.fillRect(cX, cY, 40, 500);
+        for(let i=0; i<10; i++) {
+            ctx.fillStyle = "white"; ctx.beginPath();
+            ctx.arc(cX + 20, cY + 40 + (i*45), 10, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.beginPath();
+            ctx.arc(cX + 20, cY + 40 + (i*45), 10, 0, Math.PI * 2); ctx.stroke();
+        }
+
+        ctx.fillStyle = "black"; 
+        ctx.font = "bold 32px Arial";
+        ctx.fillText("📓 Caderno de Anotações", cX + 60, cY + 50);
+        ctx.fillRect(cX + 60, cY + 65, 600, 2);
+
+        ctx.font = "20px Arial";
+        let yPista = cY + 110;
+        
+        if (anotacoes.length === 0) {
+            ctx.fillStyle = "#555";
+            ctx.fillText("Nenhuma pista anotada ainda. Investigue a cidade!", cX + 60, yPista);
+        } else {
+            ctx.fillStyle = "#1e293b";
+            for (let i = 0; i < anotacoes.length; i++) {
+                ctx.fillText("•", cX + 60, yPista);
+                wrapText(ctx, anotacoes[i], cX + 80, yPista, 560, 28);
+                yPista += 60; // Espaçamento entre as anotações
+            }
+        }
+
+        ctx.fillStyle = "#555"; ctx.font = "italic 18px Arial";
+        ctx.fillText("[ Aperte C ou ESPAÇO para fechar ]", cX + 60, cY + 470);
+    }
+
     // Diálogos Gerais
-    if (estadoJogo === "DIALOGO") {
+    if (estadoJogo === "DIALOGO" && !cadernoAberto) {
         ctx.fillStyle = "rgba(15, 23, 42, 0.95)"; ctx.fillRect(154, 540, 1100, 180);
         ctx.strokeStyle = npcFoco.tipo === "sistema" ? "#ffe600" : "#64ffda"; ctx.lineWidth = 4; ctx.strokeRect(154, 540, 1100, 180);
         ctx.fillStyle = npcFoco.tipo === "sistema" ? "#ffe600" : "#64ffda"; ctx.font = "bold 26px Arial"; ctx.fillText(npcFoco.nome + ":", 190, 585);
@@ -490,8 +557,8 @@ function draw() {
         }
     }
 
-    // Diálogo Exclusivo do Rival (Transição para Final)
-    if (estadoJogo === "RIVAL_DIALOGO") {
+    // Diálogo Exclusivo do Rival
+    if (estadoJogo === "RIVAL_DIALOGO" && !cadernoAberto) {
         ctx.fillStyle = "rgba(15, 23, 42, 0.95)"; ctx.fillRect(154, 540, 1100, 180);
         ctx.strokeStyle = "#ff4444"; ctx.lineWidth = 4; ctx.strokeRect(154, 540, 1100, 180);
         ctx.fillStyle = "#ff4444"; ctx.font = "bold 26px Arial"; ctx.fillText("Rival:", 190, 585);
@@ -506,28 +573,24 @@ function draw() {
         }
     }
 
-    // TELA DE FINAIS (LÓGICA DOS 4 FINAIS)
+    // TELA DE FINAIS
     if (estadoJogo === "FIM") {
         ctx.fillStyle = "rgba(0, 15, 5, 0.95)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.textAlign = "center"; 
         
         if (suspeitoSelecionado === 0 && pistasColetadas >= totalPistas) { 
-            // FINAL VERDADEIRO: Acusou o Rival (0) COM as 4 provas
             ctx.fillStyle = "#ffe600"; ctx.font = "bold 65px sans-serif"; ctx.fillText("🏆 FINAL VERDADEIRO", canvas.width / 2, canvas.height / 2 - 40);
             ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Com todas as provas em mãos, você expôs as mentiras do Rival!", canvas.width / 2, canvas.height / 2 + 20);
             ctx.fillText("Sem ter como escapar, ele confessou o crime. Tião foi inocentado!", canvas.width / 2, canvas.height / 2 + 60);
         } else if (suspeitoSelecionado === 0 && pistasColetadas < totalPistas) {
-            // FINAL NEUTRO: Acusou o Rival (0) SEM as 4 provas
             ctx.fillStyle = "#a8a8a8"; ctx.font = "bold 65px sans-serif"; ctx.fillText("⚖️ FINAL NEUTRO", canvas.width / 2, canvas.height / 2 - 40);
             ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você deduziu que o Rival era o culpado, mas acusou sem reunir todas as provas.", canvas.width / 2, canvas.height / 2 + 20);
             ctx.fillText("Os advogados dele o livraram com facilidade e o caso foi encerrado sem prisões.", canvas.width / 2, canvas.height / 2 + 60);
         } else if (suspeitoSelecionado === 2) {
-            // FINAL SECRETO: Acusou o Padre (2)
             ctx.fillStyle = "#b5179e"; ctx.font = "bold 65px sans-serif"; ctx.fillText("🤫 FINAL SECRETO", canvas.width / 2, canvas.height / 2 - 40);
             ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você apontou para o Padre! Todos ficaram em choque com a acusação...", canvas.width / 2, canvas.height / 2 + 20);
             ctx.fillText("Chorando, ele confessou que roubou o relógio para pagar as dívidas da igreja!", canvas.width / 2, canvas.height / 2 + 60);
         } else {
-            // FINAL RUIM: Acusou Tião (1), Seu Zé (3) ou Dona Maria (4)
             ctx.fillStyle = "#ff4444"; ctx.font = "bold 65px sans-serif"; ctx.fillText("❌ FINAL RUIM", canvas.width / 2, canvas.height / 2 - 40);
             ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("Você acusou " + suspeitosNomes[suspeitoSelecionado] + ", que não cometeu o crime!", canvas.width / 2, canvas.height / 2 + 20);
             ctx.fillText("Enquanto um inocente foi preso, o verdadeiro culpado fugiu com a relíquia...", canvas.width / 2, canvas.height / 2 + 60);
@@ -535,7 +598,6 @@ function draw() {
         
         ctx.fillStyle = "rgba(255, 255, 255, 0.4)"; ctx.font = "16px Arial";
         ctx.fillText("Jogo criado por Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 40);
-
         ctx.fillStyle = "#64ffda"; ctx.font = "bold 20px sans-serif"; ctx.fillText(">> Atualize a página para jogar novamente <<", canvas.width / 2, canvas.height / 2 + 150);
         ctx.textAlign = "left"; 
     }
