@@ -36,29 +36,30 @@ function carregarImagem(src) {
     return img;
 }
 
-// --- SISTEMA DE ÁUDIO REFEITO E EXPANDIDO ---
+// --- SISTEMA DE ÁUDIO ---
 let somPassos = new Audio("https://actions.google.com/sounds/v1/sfx/footsteps_on_cement.ogg");
 somPassos.loop = true;
 
 // Efeitos Sonoros (SFX)
-let somPista = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"); // Som impactante para pistas
+let somPista = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"); 
 somPista.volume = 0.6;
-let somClickDialogo = new Audio("https://actions.google.com/sounds/v1/sfx/ui_click.ogg"); // Som para passar falas/interagir
-let somMenuOpcoes = new Audio("https://actions.google.com/sounds/v1/multimedia/ambient_click.ogg"); // Som ao escolher perguntas 1 e 2
+let somClickDialogo = new Audio("https://actions.google.com/sounds/v1/sfx/ui_click.ogg"); 
+let somMenuOpcoes = new Audio("https://actions.google.com/sounds/v1/multimedia/ambient_click.ogg"); 
+let somTrem = new Audio("https://actions.google.com/sounds/v1/water/ship_horn.ogg"); // Som grave e alto simulando o trem
+somTrem.volume = 0.8;
 
 // Trilhas Sonoras (Músicas de Fundo)
 let musicaMisterio = new Audio("https://upload.wikimedia.org/wikipedia/commons/5/5b/Suspense_Music_Loop.ogg");
 musicaMisterio.loop = true;
 musicaMisterio.volume = 0.4; 
 
-let musicaTensa30s = new Audio("https://actions.google.com/sounds/v1/music/gothic_dark_epic_heroic.ogg"); // Trilha de perseguição/urgência
+let musicaTensa30s = new Audio("https://actions.google.com/sounds/v1/music/gothic_dark_epic_heroic.ogg"); 
 musicaTensa30s.loop = true;
 musicaTensa30s.volume = 0.5;
 
-let musicaAtiva = "MISTERIO"; // Controla qual música está tocando para não dar conflito
+let musicaAtiva = "MISTERIO"; 
 
 function gerenciarMusicaFundo() {
-    // Se faltar 30 segundos ou menos e a música tensa ainda não estiver tocando
     if (tempoRestante <= 30 && tempoRestante > 0 && estadoJogo !== "INTRO" && estadoJogo !== "FIM" && estadoJogo !== "FIM_TEMPO") {
         if (musicaAtiva !== "TENSA") {
             musicaMisterio.pause();
@@ -67,7 +68,6 @@ function gerenciarMusicaFundo() {
             musicaAtiva = "TENSA";
         }
     } else {
-        // Caso contrário, toca a música normal de mistério (se o jogo estiver rodando)
         if (musicaAtiva !== "MISTERIO" && (estadoJogo === "EXPLORANDO" || estadoJogo === "DIALOGO" || estadoJogo === "RIVAL_DIALOGO")) {
             musicaTensa30s.pause();
             musicaMisterio.play().catch(() => {});
@@ -75,14 +75,12 @@ function gerenciarMusicaFundo() {
         }
     }
     
-    // Para todas as músicas se o jogo acabar
     if (estadoJogo === "FIM" || estadoJogo === "FIM_TEMPO") {
         musicaMisterio.pause();
         musicaTensa30s.pause();
     }
 }
 
-// Ativa o áudio no primeiro clique ou tecla do jogador devido às regras dos navegadores
 function ligarMusicaInicial() {
     if (musicaAtiva === "MISTERIO" && musicaMisterio.paused && estadoJogo !== "FIM" && estadoJogo !== "FIM_TEMPO") {
         musicaMisterio.play().catch(() => {});
@@ -107,6 +105,7 @@ let npcFoco = null;
 let textoResposta = ""; 
 let pistasColetadas = 0;
 let totalPistas = 4; 
+let alertaCritico = ""; // Mensagens de alerta no meio da tela
 
 // --- CADERNO DO DETETIVE ---
 let cadernoAberto = false;
@@ -118,11 +117,24 @@ let textSpeed = 1.5;
 let tempoMaximo = 180; 
 let tempoRestante = tempoMaximo;
 
+// EVENTOS DE TEMPO
 let timerJogo = setInterval(() => {
     if (!cadernoAberto && (estadoJogo === "EXPLORANDO" || estadoJogo === "DIALOGO" || estadoJogo === "RIVAL_DIALOGO")) {
         if (tempoRestante > 0) {
             tempoRestante--;
-            gerenciarMusicaFundo(); // Checa a cada segundo se precisa trocar a música
+            gerenciarMusicaFundo(); 
+            
+            // 2 MINUTOS: Rival começa a fugir (aviso na tela)
+            if (tempoRestante === 120) alertaCritico = "O Rival percebeu sua investigação e começou a fugir!";
+            if (tempoRestante === 115) alertaCritico = "";
+            
+            // 1 MINUTO: Trem apita
+            if (tempoRestante === 60) {
+                somTrem.play().catch(()=>{});
+                alertaCritico = "O trem apitou! Falta 1 minuto para ele partir!";
+            }
+            if (tempoRestante === 55) alertaCritico = "";
+
         } else {
             estadoJogo = "FIM_TEMPO";
             gerenciarMusicaFundo();
@@ -154,10 +166,10 @@ let suspeitosNomes = ["Rival", "Tião", "Padre", "Seu Zé", "Dona Maria"];
 let textosIntro = [
     "Em um dia aparentemente comum na pequena cidade da roça, um grande crime abalou a tranquilidade dos moradores. No alto do morro, na casa mais luxuosa da região, vivia o respeitado presidente Jairo. Entre seus bens mais valiosos estava um relógio de ouro raro, uma relíquia de família passada de geração em geração durante décadas.",
     "Mas, ao amanhecer, uma notícia chocante se espalhou pela cidade: o relógio havia sido roubado!",
-    "O desaparecimento da preciosa herança gerou medo, dúvidas e muitas suspeitas. Entre os moradores, um nome logo começou a ser comentando: Tião. Mas será que ele é realmente o culpado ou está sendo acusado injustamente?",
+    "O desaparecimento da preciosa herança gerou medo, dúvidas e muitas suspeitas. Entre os moradores, um nome logo começou a ser comentado: Tião. Mas será que ele é realmente o culpado ou está sendo acusado injustamente?",
     "Diante desse mistério, precisamos da ajuda do melhor detetive da região. E esse detetive é você!",
     "Sua missão será investigar as pistas, interrogar os suspeitos, descobrir o verdadeiro ladrão e, acima de tudo, provar se Tião é culpado ou inocente.",
-    "Boa sorte, detetive. O trem parte em 3 minutes! Solucione o caso antes que o culpado fuja."
+    "Boa sorte, detetive. O trem parte em 3 minutos! Solucione o caso antes que o culpado fuja."
 ];
 let introFase = 0;
 
@@ -180,17 +192,16 @@ let keys = {};
 function acionarAcao(tecla) {
     if (estadoJogo === "INTRO") {
         if (tecla === " ") {
-            somClickDialogo.play(); // Som ao avançar introdução
+            somClickDialogo.play(); 
             introFase++; charIndex = 0;
             if (introFase >= textosIntro.length) estadoJogo = "EXPLORANDO";
         }
         return; 
     }
 
-    // Controle do Caderno do Detetive (abre com C)
     if (tecla.toLowerCase() === "c") {
         if (estadoJogo === "EXPLORANDO" || cadernoAberto) {
-            somMenuOpcoes.play(); // Som ao abrir/fechar caderno
+            somMenuOpcoes.play(); 
             cadernoAberto = !cadernoAberto;
             return;
         }
@@ -206,7 +217,7 @@ function acionarAcao(tecla) {
 
     if (estadoJogo === "RIVAL_DIALOGO") {
         if (tecla === " ") {
-            somClickDialogo.play(); // Som ao passar caixas de diálogo do Rival
+            somClickDialogo.play(); 
             if (charIndex < textosRival[falaRival].length) { charIndex = textosRival[falaRival].length; } 
             else {
                 falaRival++; charIndex = 0;
@@ -238,12 +249,12 @@ function acionarAcao(tecla) {
         let pertoItem = itensCenario.find(i => colidindo(hitboxInteracao, i) && !i.coletado);
 
         if (pertoNPC) {
-            somClickDialogo.play(); // Som ao iniciar conversa com NPC
+            somClickDialogo.play(); 
             npcFoco = pertoNPC;
             textoResposta = ""; charIndex = 0;
             estadoJogo = "DIALOGO";
         } else if (pertoItem) {
-            somPista.play(); // SOM DE COLETAR PISTA DO CENÁRIO 🎵
+            somPista.play(); 
             pertoItem.coletado = true;
             pistasColetadas++;
             anotacoes.push(pertoItem.textoPista); 
@@ -257,20 +268,20 @@ function acionarAcao(tecla) {
         if (charIndex < textoResposta.length) {
             charIndex = textoResposta.length; 
         } else {
-            somClickDialogo.play(); // Som ao fechar a caixa de resposta
+            somClickDialogo.play(); 
             estadoJogo = "EXPLORANDO"; npcFoco = null;
         }
     }
 
     if (estadoJogo === "DIALOGO" && textoResposta === "" && npcFoco && npcFoco.tipo !== "sistema") {
         if (tecla === "1") {
-            somMenuOpcoes.play(); // Som ao pressionar opção de pergunta 1 🎵
+            somMenuOpcoes.play(); 
             if (npcFoco.tipo === "rival") {
                 estadoJogo = "RIVAL_DIALOGO"; falaRival = 0; charIndex = 0;
             } else {
                 textoResposta = npcFoco.resposta1; charIndex = 0;
                 if (npcFoco.daPista1 && !npcFoco.pistaColetada) { 
-                    somPista.play(); // SOM DE COLETAR PISTA VIA DIÁLOGO 🎵
+                    somPista.play(); 
                     pistasColetadas++; 
                     npcFoco.pistaColetada = true; 
                     if (npcFoco.textoPista1) anotacoes.push(npcFoco.textoPista1);
@@ -278,10 +289,10 @@ function acionarAcao(tecla) {
             }
         }
         if (tecla === "2") {
-            somMenuOpcoes.play(); // Som ao pressionar opção de pergunta 2 🎵
+            somMenuOpcoes.play(); 
             textoResposta = npcFoco.resposta2; charIndex = 0;
             if (npcFoco.daPista2 && !npcFoco.pistaColetada) { 
-                somPista.play(); // SOM DE COLETAR PISTA VIA DIÁLOGO 🎵
+                somPista.play(); 
                 pistasColetadas++; 
                 npcFoco.pistaColetada = true; 
                 if (npcFoco.textoPista2) anotacoes.push(npcFoco.textoPista2);
@@ -391,6 +402,13 @@ function update() {
         if (detetive.y < 0) detetive.y = 0;
         if (detetive.x + detetive.w > canvas.width) detetive.x = canvas.width - detetive.w;
         if (detetive.y + detetive.h > canvas.height) detetive.y = canvas.height - detetive.h;
+
+        // Fuga do Rival: se faltar 2 min (120s) ou menos, ele anda para a esquerda até sair da tela
+        let rivalNPC = npcs.find(n => n.tipo === "rival");
+        if (tempoRestante <= 120 && rivalNPC && rivalNPC.x > -150) {
+            rivalNPC.x -= 0.5; // Velocidade da fuga
+        }
+
     } else {
         somPassos.pause(); 
     }
@@ -423,7 +441,7 @@ function draw() {
         ctx.fillStyle = "#ff4444"; ctx.textAlign = "center"; ctx.font = "bold 70px sans-serif";
         ctx.fillText("⏳ TEMPO ESGOTADO!", canvas.width / 2, canvas.height / 2 - 30);
         ctx.fillStyle = "white"; ctx.font = "26px sans-serif";
-        ctx.fillText("O trem das 18h partiu. O culpado conseguiu fugir da cidade...", canvas.width / 2, canvas.height / 2 + 30);
+        ctx.fillText("O trem partiu. O culpado conseguiu fugir da cidade...", canvas.width / 2, canvas.height / 2 + 30);
         
         ctx.fillStyle = "rgba(255, 255, 255, 0.4)"; ctx.font = "16px Arial";
         ctx.fillText("Criado por Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 40);
@@ -499,6 +517,13 @@ function draw() {
     ctx.drawImage(lanternaCanvas, 0, 0);
     ctx.restore();
 
+    // EFEITO VISUAL DE TENSÃO (30 SEGUNDOS) - Tela avermelhada pulsante
+    if (tempoRestante <= 30 && estadoJogo === "EXPLORANDO") {
+        let alpha = 0.15 + Math.abs(Math.sin(Date.now() / 250)) * 0.15; // Efeito de piscar sutil
+        ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
     if (estadoJogo === "EXPLORANDO" && !cadernoAberto) {
         let hitboxInteracao = { x: detetive.x - 25, y: detetive.y - 25, w: detetive.w + 50, h: detetive.h + 50 };
         let pertoNPC = npcs.find(n => colidindo(hitboxInteracao, n));
@@ -528,6 +553,16 @@ function draw() {
     ctx.strokeStyle = corTempo; ctx.lineWidth = 2; ctx.strokeRect(canvas.width - 220, 20, 180, 45);
     ctx.fillStyle = corTempo; ctx.font = "bold 20px Arial";
     ctx.fillText("⏳ Tempo: " + formatarTempo(tempoRestante), canvas.width - 200, 48);
+
+    // AVISOS CRÍTICOS NO MEIO DA TELA (Trem e fuga)
+    if (alertaCritico !== "" && estadoJogo === "EXPLORANDO") {
+        ctx.fillStyle = "rgba(255, 0, 0, 0.8)";
+        ctx.fillRect(canvas.width / 2 - 300, 80, 600, 50);
+        ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.strokeRect(canvas.width / 2 - 300, 80, 600, 50);
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "bold 22px Arial";
+        ctx.fillText("⚠️ " + alertaCritico, canvas.width / 2, 113);
+        ctx.textAlign = "left";
+    }
 
     // --- TELA DO CADERNO DO DETETIVE ---
     if (cadernoAberto) {
