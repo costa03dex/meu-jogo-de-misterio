@@ -96,7 +96,7 @@ let npcs = [
 ];
 
 // --- SISTEMA DE BARREIRAS (PAREDES INVISÍVEIS) ---
-let mostrarParedes = false; // Se quiser ver onde estão as caixas das casas, mude para true
+let mostrarParedes = true; // Se quiser ver onde estão as caixas das casas, mude para true
 let paredes = [
     { x: 200, y: 150, w: 180, h: 140 },  // Região da casa do Seu Zé
     { x: 1000, y: 120, w: 200, h: 140 }, // Região da igreja do Padre
