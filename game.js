@@ -1,7 +1,8 @@
-// Limpa a tela e prepara para Fullscreen
+// Limpa a tela e força o Fullscreen sem barras de rolagem
 document.body.innerHTML = "";
 document.body.style.margin = "0"; 
-document.body.style.overflow = "hidden"; 
+document.body.style.padding = "0"; 
+document.body.style.overflow = "hidden"; // Bloqueia qualquer rolagem do site
 document.body.style.backgroundColor = "#000";
 
 // Título flutuante
@@ -15,6 +16,7 @@ titulo.style.width = "100%";
 titulo.style.top = "15px";
 titulo.style.textShadow = "2px 2px 5px rgba(0,0,0,0.9)";
 titulo.style.pointerEvents = "none"; 
+titulo.style.zIndex = "10"; // Garante que o título fique por cima do jogo
 document.body.appendChild(titulo);
 
 // Configuração da Tela com a Nova Proporção (1408x768)
@@ -22,8 +24,11 @@ let canvas = document.createElement("canvas");
 canvas.width = 1408;  
 canvas.height = 768;
 canvas.style.display = "block";
-canvas.style.width = "100vw";  
-canvas.style.height = "100vh"; 
+canvas.style.position = "absolute"; // Fixa o jogo no canto da tela
+canvas.style.top = "0";
+canvas.style.left = "0";
+canvas.style.width = "100vw";  // Estica 100% da largura
+canvas.style.height = "100vh"; // Estica 100% da altura
 document.body.appendChild(canvas);
 
 let ctx = canvas.getContext("2d");
@@ -34,7 +39,7 @@ function carregarImagem(src) {
     return img;
 }
 
-// Arquivos - Atualizado para o seu novo mapa.jpg
+// Arquivos 
 let mapaImg = carregarImagem("mapa.jpg"); 
 let detetiveImg = carregarImagem("detetive.png");
 let zeImg = carregarImagem("ze.png");
@@ -50,10 +55,10 @@ let textoResposta = "";
 let pistasColetadas = 0;
 let totalPistas = 3;
 
-// Jogador centralizado no novo mapa
+// Jogador
 let detetive = { x: 660, y: 350, w: 85, h: 85, speed: 6 };
 
-// NPCs com posições recalibradas para a área 1408x768
+// NPCs
 let npcs = [
     { 
         nome: "Seu Zé", img: zeImg, x: 250, y: 280, w: 85, h: 85, tipo: "testemunha",
@@ -95,6 +100,11 @@ let npcs = [
 let keys = {};
 
 window.addEventListener("keydown", (e) => {
+    // ISSO AQUI BLOQUEIA A ROLAGEM DO SITE (AS SETINHAS E O ESPAÇO)
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) {
+        e.preventDefault();
+    }
+
     keys[e.key] = true;
 
     if (e.key === " " && estadoJogo === "EXPLORANDO") {
@@ -152,7 +162,6 @@ function update() {
         if (keys["ArrowLeft"]) detetive.x -= detetive.speed;
         if (keys["ArrowRight"]) detetive.x += detetive.speed;
 
-        // Limites ajustados para 1408x768
         if (detetive.x < 0) detetive.x = 0;
         if (detetive.y < 0) detetive.y = 0;
         if (detetive.x + detetive.w > canvas.width) detetive.x = canvas.width - detetive.w;
@@ -195,7 +204,6 @@ function draw() {
     ctx.font = "bold 18px sans-serif";
     ctx.fillText("🔎 Provas: " + pistasColetadas + " / " + totalPistas, 65, 98);
 
-    // CAIXA DE DIÁLOGO (Redimensionada e centralizada para o mapa maior)
     if (estadoJogo === "DIALOGO") {
         ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
         ctx.fillRect(154, 540, 1100, 180);
