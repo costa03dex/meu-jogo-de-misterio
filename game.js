@@ -155,7 +155,7 @@ function acionarAcao(tecla) {
     
     // Se o caderno estiver aberto, bloqueia outras ações
     if (cadernoAberto) {
-        if (tecla === " ") { // Permite fechar com Espaço também
+        if (tecla === " ") { 
             somClick.play();
             cadernoAberto = false;
         }
@@ -204,7 +204,7 @@ function acionarAcao(tecla) {
             somPista.play();
             pertoItem.coletado = true;
             pistasColetadas++;
-            anotacoes.push(pertoItem.textoPista); // Adiciona ao caderno
+            anotacoes.push(pertoItem.textoPista); 
             estadoJogo = "DIALOGO";
             npcFoco = { nome: "NOVA ANOTAÇÃO", tipo: "sistema" };
             textoResposta = `Você anotou uma pista no caderno! Aperte C para ler.`;
@@ -220,7 +220,6 @@ function acionarAcao(tecla) {
         }
     }
 
-    // INTERAÇÃO COM OPÇÕES (BOTÃO 1 OU 2)
     if (estadoJogo === "DIALOGO" && textoResposta === "" && npcFoco && npcFoco.tipo !== "sistema") {
         if (tecla === "1") {
             somClick.play();
@@ -254,7 +253,7 @@ window.addEventListener("keydown", (e) => {
 });
 window.addEventListener("keyup", (e) => keys[e.key] = false);
 
-// Controles Mobile - Nova Versão mais flexível
+// Controles Mobile
 function criarBotaoMobile(txt, props, tecla) {
     let btn = document.createElement("div");
     btn.className = "btn-mobile"; 
@@ -298,16 +297,13 @@ function criarBotaoMobile(txt, props, tecla) {
     btn.addEventListener("mouseleave", soltar); document.body.appendChild(btn);
 }
 
-// Botões de movimento
 criarBotaoMobile("↑", {left: "90px", bottom: "160px", size: "60px"}, "ArrowUp");
 criarBotaoMobile("↓", {left: "90px", bottom: "20px", size: "60px"}, "ArrowDown");
 criarBotaoMobile("←", {left: "20px", bottom: "90px", size: "60px"}, "ArrowLeft");
 criarBotaoMobile("→", {left: "160px", bottom: "90px", size: "60px"}, "ArrowRight");
-// Botões de Ação
 criarBotaoMobile("A", {right: "30px", bottom: "30px", size: "80px"}, " ");
 criarBotaoMobile("1", {right: "120px", bottom: "130px", size: "55px"}, "1");
 criarBotaoMobile("2", {right: "30px", bottom: "130px", size: "55px"}, "2");
-// Novo: Botão do Caderno (canto superior direito)
 criarBotaoMobile("📓", {right: "20px", top: "20px", size: "65px", fontSize: "30px", bg: "rgba(100, 255, 218, 0.3)"}, "c");
 
 function colidindo(r1, r2) {
@@ -476,7 +472,7 @@ function draw() {
     ctx.fillStyle = "#64ffda"; ctx.font = "bold 18px sans-serif";
     ctx.fillText("🔎 Provas: " + pistasColetadas + " / " + totalPistas, 45, 48);
 
-    // HUD: Dica de como abrir o Caderno (substitui a mochila)
+    // HUD: Dica de como abrir o Caderno
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(235, 20, 280, 45);
     ctx.strokeStyle = "#ffe600"; ctx.lineWidth = 2; ctx.strokeRect(235, 20, 280, 45);
     ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; 
@@ -527,7 +523,7 @@ function draw() {
             for (let i = 0; i < anotacoes.length; i++) {
                 ctx.fillText("•", cX + 60, yPista);
                 wrapText(ctx, anotacoes[i], cX + 80, yPista, 560, 28);
-                yPista += 60; // Espaçamento entre as anotações
+                yPista += 60; 
             }
         }
 
