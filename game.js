@@ -37,7 +37,6 @@ function carregarImagem(src) {
 }
 
 // --- SISTEMA DE ÁUDIO (ARQUIVOS LOCAIS) ---
-// Certifique-se de que esses arquivos existam na mesma pasta do jogo!
 let somPassos = new Audio("passos.mp3");
 somPassos.loop = true;
 
@@ -46,6 +45,7 @@ somPista.volume = 0.6;
 
 let somClickDialogo = new Audio("click.mp3"); 
 let somMenuOpcoes = new Audio("click.mp3"); 
+let somTrem = new Audio("trem.mp3"); // NOVO SOM DO TREM 🎵
 
 let musicaMisterio = new Audio("misterio.mp3");
 musicaMisterio.loop = true;
@@ -104,6 +104,10 @@ let textoResposta = "";
 let pistasColetadas = 0;
 let totalPistas = 4; 
 
+// --- SISTEMA DE AVISOS (CONSEQUÊNCIAS DO TEMPO) ---
+let avisoSistema = "";
+let timerAviso = 0;
+
 // --- CADERNO DO DETETIVE ---
 let cadernoAberto = false;
 let anotacoes = [];
@@ -119,6 +123,21 @@ let timerJogo = setInterval(() => {
         if (tempoRestante > 0) {
             tempoRestante--;
             gerenciarMusicaFundo(); 
+
+            // EVENTOS DE CONSEQUÊNCIA DO TEMPO ⏱️
+            if (tempoRestante === 120) {
+                avisoSistema = "O Rival foi visto olhando nervosamente para a estação de trem!";
+                timerAviso = 6; // O aviso fica na tela por 6 segundos
+            }
+            if (tempoRestante === 60) {
+                avisoSistema = "PRIIII! O trem apitou! Vai partir em 1 minuto, corra!";
+                timerAviso = 6;
+                somTrem.play().catch(()=>{}); // Toca o apito do trem
+            }
+            
+            // Reduz o tempo do aviso na tela
+            if (timerAviso > 0) timerAviso--;
+
         } else {
             estadoJogo = "FIM_TEMPO";
             gerenciarMusicaFundo();
@@ -485,6 +504,14 @@ function draw() {
     ctx.drawImage(lanternaCanvas, 0, 0);
     ctx.restore();
 
+    // --- EFEITO DE TENSÃO (TELA AVERMELHADA) ---
+    if (tempoRestante <= 30 && (estadoJogo === "EXPLORANDO" || estadoJogo === "DIALOGO")) {
+        // Cria um efeito de piscar suave usando o tempo
+        let alpha = 0.15 + Math.sin(Date.now() / 200) * 0.05; 
+        ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
     if (estadoJogo === "EXPLORANDO" && !cadernoAberto) {
         let hitboxInteracao = { x: detetive.x - 25, y: detetive.y - 25, w: detetive.w + 50, h: detetive.h + 50 };
         let pertoNPC = npcs.find(n => colidindo(hitboxInteracao, n));
@@ -494,6 +521,16 @@ function draw() {
             ctx.fillStyle = "rgba(0,0,0,0.85)"; ctx.fillRect(detetive.x - 20, detetive.y - 45, 130, 30);
             ctx.fillStyle = "white"; ctx.font = "bold 13px sans-serif"; ctx.fillText("Botão A / ESPAÇO", detetive.x - 12, detetive.y - 25);
         }
+    }
+
+    // --- HUD: AVISOS DO SISTEMA ---
+    if (avisoSistema !== "" && timerAviso > 0 && !cadernoAberto) {
+        ctx.fillStyle = "rgba(255, 50, 50, 0.9)";
+        ctx.fillRect(canvas.width / 2 - 350, 80, 700, 50);
+        ctx.strokeStyle = "white"; ctx.lineWidth = 3; ctx.strokeRect(canvas.width / 2 - 350, 80, 700, 50);
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "bold 22px Arial";
+        ctx.fillText("⚠️ " + avisoSistema, canvas.width / 2, 113);
+        ctx.textAlign = "left"; // Reseta o alinhamento
     }
 
     // HUD: Contador Provas
