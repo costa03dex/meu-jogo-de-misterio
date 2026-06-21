@@ -1,15 +1,14 @@
-// Limpa a tela antiga para evitar duplicatas
+// Limpa a tela
 document.body.innerHTML = "";
 
-// Cria o título do jogo
 let titulo = document.createElement("h2");
-titulo.innerText = "🕵️ Mistério na Vila: O Confronto Final";
+titulo.innerText = "🕵️ Mistério na Vila: O Interrogatório";
 titulo.style.fontFamily = "sans-serif";
 titulo.style.textAlign = "center";
-titulo.style.color = "#fff"; // Mudei para branco para destacar
+titulo.style.color = "#fff";
 document.body.appendChild(titulo);
 
-// --- CONFIGURAÇÃO DA TELA (1304 x 668) ---
+// Configuração da Tela
 let canvas = document.createElement("canvas");
 canvas.width = 1304; 
 canvas.height = 668;
@@ -21,15 +20,14 @@ document.body.appendChild(canvas);
 
 let ctx = canvas.getContext("2d");
 
-// --- CARREGANDO AS IMAGENS ---
 function carregarImagem(src) {
     let img = new Image();
     img.src = src;
     return img;
 }
 
-// Os nomes aqui precisam bater EXATAMENTE com o seu GitHub (já estão certos)
-let mapaImg = carregarImagem("mapa.png");
+// Já ajustado para mapa.png!
+let mapaImg = carregarImagem("mapa.png"); 
 let detetiveImg = carregarImagem("detetive.png");
 let zeImg = carregarImagem("ze.png");
 let mariaImg = carregarImagem("maria.png");
@@ -37,119 +35,155 @@ let padreImg = carregarImagem("padre.png");
 let tiaoImg = carregarImagem("tiao.png");
 let rivalImg = carregarImagem("rival.png");
 
-// --- CONFIGURAÇÕES DO JOGADOR ---
-let detetive = { 
-    x: 650, y: 334, 
-    width: 60, height: 60, 
-    speed: 6 
-};
-
-// --- SISTEMA DE PISTAS ---
+// --- VARIÁVEIS DE ESTADO ---
+let estadoJogo = "EXPLORANDO"; 
+let npcFoco = null; 
+let textoResposta = ""; 
 let pistasColetadas = 0;
-let totalDePistas = 3;
+let totalPistas = 3;
 
-// --- PERSONAGENS (NPCs) ---
+// Jogador (Tamanho 75x75, perfeito para as casas)
+let detetive = { x: 600, y: 320, w: 75, h: 75, speed: 6 };
+
+// NPCs espalhados perfeitamente pelo novo mapa
 let npcs = [
-    { nome: "Seu Zé", img: zeImg, x: 250, y: 150, w: 60, h: 60, fala: "Vi o Rival correndo pra mata com um saco de moedas!", temPista: true, deuPista: false, tipo: "testemunha" },
-    { nome: "Dona Maria", img: mariaImg, x: 1000, y: 550, w: 60, h: 60, fala: "Achei um lenço do Rival no chão da casa do Tião...", temPista: true, deuPista: false, tipo: "testemunha" },
-    { nome: "Padre", img: padreImg, x: 1100, y: 120, w: 60, h: 60, fala: "O Rival me confessou ódio pelo Tião ontem.", temPista: true, deuPista: false, tipo: "testemunha" },
-    { nome: "Tião", img: tiaoImg, x: 550, y: 500, w: 65, h: 65, fala: "Por favor, detetive! Prove que eu não roubei nada!", temPista: false, deuPista: false, tipo: "aliado" },
-    { nome: "Rival", img: rivalImg, x: 150, y: 530, w: 65, h: 65, fala: "", temPista: false, deuPista: false, tipo: "rival" }
+    { 
+        nome: "Seu Zé", img: zeImg, x: 180, y: 250, w: 75, h: 75, tipo: "testemunha",
+        pistaColetada: false,
+        pergunta1: "1. Viu algo estranho na noite do roubo?", 
+        resposta1: "Vi o Rival correndo pra mata com um saco de moedas!", daPista1: true,
+        pergunta2: "2. Como é o Tião?", 
+        resposta2: "Tião é trabalhador, nunca roubou nem uma galinha.", daPista2: false
+    },
+    { 
+        nome: "Dona Maria", img: mariaImg, x: 1000, y: 480, w: 75, h: 75, tipo: "testemunha",
+        pistaColetada: false,
+        pergunta1: "1. O que você encontrou na casa do Tião?", 
+        resposta1: "Achei um lenço chique no chão. O Tião não usa seda... mas o Rival sim.", daPista1: true,
+        pergunta2: "2. O Tião tem inimigos?", 
+        resposta2: "Apenas o Rival. Eles brigaram por terras mês passado.", daPista2: false
+    },
+    { 
+        nome: "Padre", img: padreImg, x: 900, y: 250, w: 75, h: 75, tipo: "testemunha",
+        pistaColetada: false,
+        pergunta1: "1. O que o Tião estava fazendo na hora do crime?", 
+        resposta1: "Ele estava comigo na igreja, ajudando a limpar o altar.", daPista1: false,
+        pergunta2: "2. O Rival tem se confessado?", 
+        resposta2: "Sim, ele me confessou um ódio profundo e um plano contra o Tião.", daPista2: true
+    },
+    { 
+        nome: "Tião", img: tiaoImg, x: 500, y: 520, w: 75, h: 75, tipo: "aliado",
+        pistaColetada: false,
+        pergunta1: "1. Fique calmo, vou te tirar dessa.", 
+        resposta1: "Obrigado, detetive! Confio na sua investigação.", daPista1: false,
+        pergunta2: "2. Quem você acha que te incriminou?", 
+        resposta2: "Só pode ser aquele engravatado do Rival!", daPista2: false
+    },
+    { 
+        nome: "Rival", img: rivalImg, x: 100, y: 480, w: 75, h: 75, tipo: "rival"
+    }
 ];
 
-let mensagemAtual = "";
 let keys = {};
 
-// Controles do teclado
-window.addEventListener("keydown", (e) => keys[e.key] = true);
-window.addEventListener("keyup", (e) => keys[e.key] = false);
+window.addEventListener("keydown", (e) => {
+    keys[e.key] = true;
 
-// Checa se um personagem encostou no outro
-function colidindo(r1, r2) {
-    return (r1.x < r2.x + r2.w && r1.x + r1.width > r2.x && r1.y < r2.y + r2.h && r1.y + r1.height > r2.y);
-}
-
-// Atualiza a posição e as regras do jogo
-function update() {
-    if (keys["ArrowUp"]) detetive.y -= detetive.speed;
-    if (keys["ArrowDown"]) detetive.y += detetive.speed;
-    if (keys["ArrowLeft"]) detetive.x -= detetive.speed;
-    if (keys["ArrowRight"]) detetive.x += detetive.speed;
-
-    // Impede de sair da tela
-    if (detetive.x < 0) detetive.x = 0;
-    if (detetive.y < 0) detetive.y = 0;
-    if (detetive.x + detetive.width > canvas.width) detetive.x = canvas.width - detetive.width;
-    if (detetive.y + detetive.height > canvas.height) detetive.y = canvas.height - detetive.height;
-
-    mensagemAtual = "";
-
-    // Checa conversas e pistas
-    for (let npc of npcs) {
-        if (colidindo(detetive, npc)) {
-            if (npc.tipo === "rival") {
-                if (pistasColetadas >= totalDePistas) {
-                    mensagemAtual = "RIVAL: Maldição! Você provou tudo! Eu armei pro Tião mesmo!";
+    if (e.key === " " && estadoJogo === "EXPLORANDO") {
+        let perto = npcs.find(n => colidindo(detetive, n));
+        if (perto) {
+            estadoJogo = "DIALOGO";
+            npcFoco = perto;
+            textoResposta = "";
+            
+            if (npcFoco.tipo === "rival") {
+                if (pistasColetadas >= totalPistas) {
+                    textoResposta = "RIVAL: Não... como você descobriu? FUI EU! Eu armei tudo!";
+                    setTimeout(() => { estadoJogo = "FIM"; }, 3500); 
                 } else {
-                    mensagemAtual = "RIVAL: Hahaha! Sem provas, você não pode me prender!";
-                }
-            } else {
-                mensagemAtual = npc.nome + ": " + npc.fala;
-                if (npc.temPista && !npc.deuPista) {
-                    npc.deuPista = true;
-                    pistasColetadas++;
+                    textoResposta = "RIVAL: Saia daqui, seu xereta. Volte quando tiver provas de verdade!";
                 }
             }
         }
-    }
-}
-
-// Desenha tudo na tela
-function draw() {
-    // 1. Mapa
-    ctx.drawImage(mapaImg, 0, 0, canvas.width, canvas.height);
-
-    // 2. NPCs (Personagens)
-    for (let npc of npcs) {
-        ctx.drawImage(npc.img, npc.x, npc.y, npc.w, npc.h);
-        // Desenha a exclamação se tiver pista não coletada
-        if (npc.temPista && !npc.deuPista) {
-            ctx.fillStyle = "yellow";
-            ctx.font = "bold 30px Arial";
-            ctx.fillText("!", npc.x + 25, npc.y - 10);
+    } 
+    else if (e.key === " " && estadoJogo === "DIALOGO" && textoResposta !== "") {
+        if (estadoJogo !== "FIM") { 
+            estadoJogo = "EXPLORANDO";
+            npcFoco = null;
         }
     }
 
-    // 3. Detetive
-    ctx.drawImage(detetiveImg, detetive.x, detetive.y, detetive.width, detetive.height);
+    if (estadoJogo === "DIALOGO" && textoResposta === "" && npcFoco.tipo !== "rival") {
+        if (e.key === "1") {
+            textoResposta = npcFoco.resposta1;
+            if (npcFoco.daPista1 && !npcFoco.pistaColetada) {
+                pistasColetadas++;
+                npcFoco.pistaColetada = true;
+            }
+        }
+        if (e.key === "2") {
+            textoResposta = npcFoco.resposta2;
+            if (npcFoco.daPista2 && !npcFoco.pistaColetada) {
+                pistasColetadas++;
+                npcFoco.pistaColetada = true;
+            }
+        }
+    }
+});
 
-    // 4. Interface (UI) de Pistas
-    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-    ctx.fillRect(20, 20, 220, 50);
-    ctx.fillStyle = "#64ffda";
-    ctx.font = "bold 20px sans-serif";
-    ctx.fillText("🔎 Provas: " + pistasColetadas + " / " + totalDePistas, 40, 52);
+window.addEventListener("keyup", (e) => keys[e.key] = false);
 
-    // 5. Caixa de Diálogo
-    if (mensagemAtual !== "") {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
-        ctx.fillRect(150, 580, 1000, 70);
-        ctx.strokeStyle = "#64ffda";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(150, 580, 1000, 70);
-        ctx.fillStyle = "white";
-        ctx.font = "20px sans-serif";
-        ctx.fillText(mensagemAtual, 180, 622);
+function colidindo(r1, r2) {
+    return (r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y);
+}
+
+function update() {
+    if (estadoJogo === "EXPLORANDO") {
+        if (keys["ArrowUp"]) detetive.y -= detetive.speed;
+        if (keys["ArrowDown"]) detetive.y += detetive.speed;
+        if (keys["ArrowLeft"]) detetive.x -= detetive.speed;
+        if (keys["ArrowRight"]) detetive.x += detetive.speed;
+
+        // Limites da tela total
+        if (detetive.x < 0) detetive.x = 0;
+        if (detetive.y < 0) detetive.y = 0;
+        if (detetive.x + detetive.w > canvas.width) detetive.x = canvas.width - detetive.w;
+        if (detetive.y + detetive.h > canvas.height) detetive.y = canvas.height - detetive.h;
+    }
+}
+
+function draw() {
+    // Fundo desenhado cobrindo a tela toda
+    ctx.drawImage(mapaImg, 0, 0, canvas.width, canvas.height);
+
+    for (let npc of npcs) {
+        ctx.drawImage(npc.img, npc.x, npc.y, npc.w, npc.h);
+        
+        if (npc.tipo === "testemunha" && !npc.pistaColetada) {
+            ctx.fillStyle = "yellow";
+            ctx.font = "bold 30px Arial";
+            ctx.fillText("!", npc.x + 30, npc.y - 10);
+        }
     }
 
-    requestAnimationFrame(gameLoop);
-}
+    ctx.drawImage(detetiveImg, detetive.x, detetive.y, detetive.w, detetive.h);
 
-// Roda o jogo sem parar
-function gameLoop() {
-    update();
-    draw();
-}
+    if (estadoJogo === "EXPLORANDO") {
+        let perto = npcs.find(n => colidindo(detetive, n));
+        if (perto) {
+            ctx.fillStyle = "rgba(0,0,0,0.85)";
+            ctx.fillRect(detetive.x - 25, detetive.y - 45, 130, 30);
+            ctx.fillStyle = "white";
+            ctx.font = "bold 13px sans-serif";
+            ctx.fillText("Aperte ESPAÇO", detetive.x - 10, detetive.y - 25);
+        }
+    }
 
-// Só começa quando o mapa carregar
-mapaImg.onload = () => gameLoop();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+    ctx.fillRect(30, 30, 200, 45);
+    ctx.strokeStyle = "#64ffda";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(30, 30, 200, 45);
+    ctx.fillStyle = "#64ffda";
+    ctx.font = "bold 18px sans-serif";
+    ctx.fillText("🔎 Provas: " + pistasColetadas + " /
