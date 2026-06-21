@@ -636,8 +636,6 @@ function loop(){
     );
 }
 
-loop();
-
 </script>
 </body>
 </html>
