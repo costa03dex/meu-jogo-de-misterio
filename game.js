@@ -15,8 +15,7 @@ estilo.innerHTML = `
 `;
 document.head.appendChild(estilo);
 
-// O TITULO QUE ATRAPALHAVA FOI REMOVIDO DAQUI COLETIVAMENTE 🕵️
-
+// O canvas agora ocupa a tela livremente, sem títulos acima dele
 let canvas = document.createElement("canvas");
 canvas.width = 1408;  
 canvas.height = 768;
@@ -94,9 +93,6 @@ let npcs = [
     { nome: "Rival", img: rivalImg, x: 150, y: 550, w: 85, h: 85, tipo: "rival" }
 ];
 
-let mostrarParedes = false; 
-let paredes = []; 
-
 let itensCenario = [
     { nome: "Lenço de Seda", icone: "🧣", x: 850, y: 150, w: 40, h: 40, coletado: false }
 ];
@@ -110,7 +106,7 @@ let suspeitosNomes = ["Rival", "Tião", "Padre", "Seu Zé", "Dona Maria"];
 let textosIntro = [
     "Em um dia aparentemente comum na pequena cidade da roça, um grande crime abalou a tranquilidade dos moradores. No alto do morro, na casa mais luxuosa da região, vivia o respeitado presidente Jairo. Entre seus bens mais valiosos estava um relógio de ouro raro, uma relíquia de família passada de geração em geração durante décadas.",
     "Mas, ao amanhecer, uma notícia chocante se espalhou pela cidade: o relógio havia sido roubado!",
-    "O desaparecimento da preciosa herança gerou medo, dúvidas e muitas suspeitas. Entre os moradores, um nome logo começou a ser comentando: Tião. Mas será que ele é realmente o culpado ou está sendo acusado injustamente?",
+    "O desaparecimento da preciosa herança gerou medo, dúvidas e muitas suspeitas. Entre os moradores, um nome logo começou a ser comentado: Tião. Mas será que ele é realmente o culpado ou está sendo acusado injustamente?",
     "Diante desse mistério, precisamos da ajuda do melhor detetive da região. E esse detetive é você!",
     "Sua missão será investigar as pistas, interrogar os suspeitos, descobrir o verdadeiro ladrão e, acima de tudo, provar se Tião é culpado ou inocente.",
     "Boa sorte, detetive. O trem parte em 3 minutos! Solucione o caso antes que o culpado fuja."
@@ -172,7 +168,7 @@ function acionarAcao(tecla) {
     }
 
     if (tecla === " " && estadoJogo === "EXPLORANDO") {
-        let hitboxInteracao = { x: detetive.x - 20, y: detetive.y - 20, w: detetive.w + 40, h: detetive.h + 40 };
+        let hitboxInteracao = { x: detetive.x - 25, y: detetive.y - 25, w: detetive.w + 50, h: detetive.h + 50 };
         let pertoNPC = npcs.find(n => colidindo(hitboxInteracao, n));
         let pertoItem = itensCenario.find(i => colidindo(hitboxInteracao, i) && !i.coletado);
 
@@ -186,7 +182,6 @@ function acionarAcao(tecla) {
                     estadoJogo = "RIVAL_DIALOGO"; falaRival = 0; charIndex = 0;
                 } else {
                     estadoJogo = "DIALOGO";
-                    // MOSTRANDO O CONTEÚDO ATUAL DA MOCHILA SE O JOGADOR TENTAR ACUSAR SEM PROVAS
                     let itensNaMochila = itensCenario.filter(i => i.coletado).map(i => i.nome).join(", ") || "Nenhum objeto";
                     let depoimentosNaMochila = npcs.filter(n => n.pistaColetada).map(n => n.nome).join(", ") || "Nenhum depoimento";
                     textoResposta = `RIVAL: Saia daqui! Você ainda não tem todas as provas! [MOCHILA ATUAL: Itens: ${itensNaMochila} | Depoimentos de: ${depoimentosNaMochila}]`;
@@ -314,6 +309,7 @@ function update() {
             somPassos.pause();
         }
 
+        // Movimento livre de colisões com o cenário ou npcs
         if (keys["ArrowUp"]) detetive.y -= detetive.speed;
         if (keys["ArrowDown"]) detetive.y += detetive.speed;
         if (keys["ArrowLeft"]) detetive.x -= detetive.speed;
@@ -432,7 +428,7 @@ function draw() {
     ctx.restore();
 
     if (estadoJogo === "EXPLORANDO") {
-        let hitboxInteracao = { x: detetive.x - 20, y: detetive.y - 20, w: detetive.w + 40, h: detetive.h + 40 };
+        let hitboxInteracao = { x: detetive.x - 25, y: detetive.y - 25, w: detetive.w + 50, h: detetive.h + 50 };
         let pertoNPC = npcs.find(n => colidindo(hitboxInteracao, n));
         let pertoItem = itensCenario.find(i => colidindo(hitboxInteracao, i) && !i.coletado);
         
