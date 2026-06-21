@@ -3,7 +3,7 @@ document.body.innerHTML = "";
 document.body.style.margin = "0"; 
 document.body.style.padding = "0"; 
 document.body.style.overflow = "hidden"; // Bloqueia rolagem do site
-document.body.style.backgroundColor = "#222"; // Fundo cinza escuro para teste
+document.body.style.backgroundColor = "#222"; 
 
 // Título flutuante
 let titulo = document.createElement("h2");
@@ -39,8 +39,8 @@ function carregarImagem(src) {
     return img;
 }
 
-// Arquivos (Certifique-se de que estão no GitHub exatamente com estes nomes)
-let mapaImg = carregarImagem("mapa.jpg"); 
+// ARQUIVOS - AQUI ESTAVA O PROBLEMA! Mudei para mapa.png
+let mapaImg = carregarImagem("mapa.png"); 
 let detetiveImg = carregarImagem("detetive.png");
 let zeImg = carregarImagem("ze.png");
 let mariaImg = carregarImagem("maria.png");
@@ -143,114 +143,3 @@ window.addEventListener("keydown", (e) => {
             textoResposta = npcFoco.resposta2;
             if (npcFoco.daPista2 && !npcFoco.pistaColetada) {
                 pistasColetadas++;
-                npcFoco.pistaColetada = true;
-            }
-        }
-    }
-});
-
-window.addEventListener("keyup", (e) => keys[e.key] = false);
-
-function colidindo(r1, r2) {
-    return (r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y);
-}
-
-function update() {
-    if (estadoJogo === "EXPLORANDO") {
-        if (keys["ArrowUp"]) detetive.y -= detetive.speed;
-        if (keys["ArrowDown"]) detetive.y += detetive.speed;
-        if (keys["ArrowLeft"]) detetive.x -= detetive.speed;
-        if (keys["ArrowRight"]) detetive.x += detetive.speed;
-
-        if (detetive.x < 0) detetive.x = 0;
-        if (detetive.y < 0) detetive.y = 0;
-        if (detetive.x + detetive.w > canvas.width) detetive.x = canvas.width - detetive.w;
-        if (detetive.y + detetive.h > canvas.height) detetive.y = canvas.height - detetive.h;
-    }
-}
-
-function draw() {
-    // Limpa a tela (caso o mapa não carregue, fica cinza)
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Tenta desenhar o mapa
-    if (mapaImg.complete) {
-        ctx.drawImage(mapaImg, 0, 0, canvas.width, canvas.height);
-    } else {
-        ctx.fillStyle = "gray";
-        ctx.font = "30px Arial";
-        ctx.fillText("Carregando mapa... (Ou mapa.jpg não encontrado!)", 300, 300);
-    }
-
-    // Desenha personagens
-    for (let npc of npcs) {
-        if (npc.img.complete) {
-            ctx.drawImage(npc.img, npc.x, npc.y, npc.w, npc.h);
-        }
-        if (npc.tipo === "testemunha" && !npc.pistaColetada) {
-            ctx.fillStyle = "yellow";
-            ctx.font = "bold 35px Arial";
-            ctx.fillText("!", npc.x + 35, npc.y - 5);
-        }
-    }
-
-    if (detetiveImg.complete) {
-        ctx.drawImage(detetiveImg, detetive.x, detetive.y, detetive.w, detetive.h);
-    }
-
-    if (estadoJogo === "EXPLORANDO") {
-        let perto = npcs.find(n => colidindo(detetive, n));
-        if (perto) {
-            ctx.fillStyle = "rgba(0,0,0,0.85)";
-            ctx.fillRect(detetive.x - 20, detetive.y - 45, 130, 30);
-            ctx.fillStyle = "white";
-            ctx.font = "bold 13px sans-serif";
-            ctx.fillText("Aperte ESPAÇO", detetive.x - 5, detetive.y - 25);
-        }
-    }
-
-    ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
-    ctx.fillRect(40, 70, 200, 45); 
-    ctx.strokeStyle = "#64ffda";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(40, 70, 200, 45);
-    ctx.fillStyle = "#64ffda";
-    ctx.font = "bold 18px sans-serif";
-    ctx.fillText("🔎 Provas: " + pistasColetadas + " / " + totalPistas, 65, 98);
-
-    if (estadoJogo === "DIALOGO") {
-        ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
-        ctx.fillRect(154, 540, 1100, 180);
-        ctx.strokeStyle = "#64ffda";
-        ctx.lineWidth = 4;
-        ctx.strokeRect(154, 540, 1100, 180);
-        
-        ctx.fillStyle = "#64ffda";
-        ctx.font = "bold 26px Arial";
-        ctx.fillText(npcFoco.nome + ":", 190, 585);
-
-        ctx.fillStyle = "white";
-        ctx.font = "21px Arial";
-
-        if (textoResposta !== "") {
-            ctx.fillText(textoResposta, 190, 635);
-            ctx.fillStyle = "#94a3b8";
-            ctx.font = "16px Arial";
-            ctx.fillText("[ Aperte ESPAÇO para fechar ]", 190, 690);
-        } 
-        else if (npcFoco.tipo !== "rival") {
-            ctx.fillStyle = "#e2e8f0";
-            ctx.fillText("Escolha o que perguntar (aperte 1 ou 2 no seu teclado):", 190, 625);
-            ctx.fillStyle = "#64ffda";
-            ctx.fillText(npcFoco.pergunta1, 210, 665);
-            ctx.fillText(npcFoco.pergunta2, 210, 695);
-        }
-    }
-
-    if (estadoJogo === "FIM") {
-        ctx.fillStyle = "rgba(0, 15, 5, 0.92)"; 
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = "#ffe600"; 
-        ctx.textAlign = "center";
-        ctx.font = "bold 70px
