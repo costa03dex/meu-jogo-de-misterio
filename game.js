@@ -2,8 +2,8 @@
 document.body.innerHTML = "";
 document.body.style.margin = "0"; 
 document.body.style.padding = "0"; 
-document.body.style.overflow = "hidden"; // Bloqueia qualquer rolagem do site
-document.body.style.backgroundColor = "#000";
+document.body.style.overflow = "hidden"; // Bloqueia rolagem do site
+document.body.style.backgroundColor = "#222"; // Fundo cinza escuro para teste
 
 // Título flutuante
 let titulo = document.createElement("h2");
@@ -16,7 +16,7 @@ titulo.style.width = "100%";
 titulo.style.top = "15px";
 titulo.style.textShadow = "2px 2px 5px rgba(0,0,0,0.9)";
 titulo.style.pointerEvents = "none"; 
-titulo.style.zIndex = "10"; // Garante que o título fique por cima do jogo
+titulo.style.zIndex = "10"; 
 document.body.appendChild(titulo);
 
 // Configuração da Tela com a Nova Proporção (1408x768)
@@ -24,11 +24,11 @@ let canvas = document.createElement("canvas");
 canvas.width = 1408;  
 canvas.height = 768;
 canvas.style.display = "block";
-canvas.style.position = "absolute"; // Fixa o jogo no canto da tela
+canvas.style.position = "absolute"; 
 canvas.style.top = "0";
 canvas.style.left = "0";
-canvas.style.width = "100vw";  // Estica 100% da largura
-canvas.style.height = "100vh"; // Estica 100% da altura
+canvas.style.width = "100vw";  
+canvas.style.height = "100vh"; 
 document.body.appendChild(canvas);
 
 let ctx = canvas.getContext("2d");
@@ -39,7 +39,7 @@ function carregarImagem(src) {
     return img;
 }
 
-// Arquivos 
+// Arquivos (Certifique-se de que estão no GitHub exatamente com estes nomes)
 let mapaImg = carregarImagem("mapa.jpg"); 
 let detetiveImg = carregarImagem("detetive.png");
 let zeImg = carregarImagem("ze.png");
@@ -100,7 +100,7 @@ let npcs = [
 let keys = {};
 
 window.addEventListener("keydown", (e) => {
-    // ISSO AQUI BLOQUEIA A ROLAGEM DO SITE (AS SETINHAS E O ESPAÇO)
+    // Bloqueia a rolagem do site com setas e espaço
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) {
         e.preventDefault();
     }
@@ -170,11 +170,23 @@ function update() {
 }
 
 function draw() {
-    ctx.drawImage(mapaImg, 0, 0, canvas.width, canvas.height);
+    // Limpa a tela (caso o mapa não carregue, fica cinza)
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Tenta desenhar o mapa
+    if (mapaImg.complete) {
+        ctx.drawImage(mapaImg, 0, 0, canvas.width, canvas.height);
+    } else {
+        ctx.fillStyle = "gray";
+        ctx.font = "30px Arial";
+        ctx.fillText("Carregando mapa... (Ou mapa.jpg não encontrado!)", 300, 300);
+    }
 
+    // Desenha personagens
     for (let npc of npcs) {
-        ctx.drawImage(npc.img, npc.x, npc.y, npc.w, npc.h);
-        
+        if (npc.img.complete) {
+            ctx.drawImage(npc.img, npc.x, npc.y, npc.w, npc.h);
+        }
         if (npc.tipo === "testemunha" && !npc.pistaColetada) {
             ctx.fillStyle = "yellow";
             ctx.font = "bold 35px Arial";
@@ -182,7 +194,9 @@ function draw() {
         }
     }
 
-    ctx.drawImage(detetiveImg, detetive.x, detetive.y, detetive.w, detetive.h);
+    if (detetiveImg.complete) {
+        ctx.drawImage(detetiveImg, detetive.x, detetive.y, detetive.w, detetive.h);
+    }
 
     if (estadoJogo === "EXPLORANDO") {
         let perto = npcs.find(n => colidindo(detetive, n));
@@ -239,27 +253,4 @@ function draw() {
         
         ctx.fillStyle = "#ffe600"; 
         ctx.textAlign = "center";
-        ctx.font = "bold 70px sans-serif";
-        ctx.fillText("🏆 VOCÊ VENCEU!", canvas.width / 2, canvas.height / 2 - 30);
-        
-        ctx.fillStyle = "white";
-        ctx.font = "26px sans-serif";
-        ctx.fillText("As pistas estavam certas! O Rival foi desmascarado,", canvas.width / 2, canvas.height / 2 + 30);
-        ctx.fillText("e o inocente Tião está livre. O mistério acabou!", canvas.width / 2, canvas.height / 2 + 70);
-        
-        ctx.fillStyle = "#64ffda";
-        ctx.font = "bold 20px sans-serif";
-        ctx.fillText(">> Atualize a página (F5) para jogar novamente <<", canvas.width / 2, canvas.height / 2 + 150);
-        
-        ctx.textAlign = "left"; 
-    }
-
-    requestAnimationFrame(gameLoop);
-}
-
-function gameLoop() {
-    update();
-    draw();
-}
-
-mapaImg.onload = () => gameLoop();
+        ctx.font = "bold 70px
