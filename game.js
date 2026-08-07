@@ -312,6 +312,13 @@ function draw() {
         if (charIndex < txtOriginal.length) charIndex += textSpeed;
         wrapText(ctx, txtOriginal.substring(0, Math.floor(charIndex)), canvas.width / 2, canvas.height / 2 - 60, 1000, 45);
         ctx.fillStyle = "#64ffda"; ctx.font = "20px Arial"; ctx.fillText("[ Aperte A (ou ESPAÇO) para continuar ]", canvas.width / 2, canvas.height - 80);
+        
+        // --- ASSINATURA NA INTRO ---
+        if (estadoJogo === "INTRO") {
+            ctx.fillStyle = "#aaa"; ctx.font = "16px Arial"; 
+            ctx.fillText("Desenvolvido por: Anna Jullya Costa de Araujo", canvas.width / 2, canvas.height - 30);
+        }
+
         ctx.textAlign = "left"; requestAnimationFrame(gameLoop); return; 
     }
 
@@ -453,6 +460,11 @@ function draw() {
         ctx.fillText(`Nota de Detetive: ${nota}`, canvas.width / 2, statY + 185);
 
         ctx.fillStyle = "#64ffda"; ctx.font = "bold 20px sans-serif"; ctx.fillText(">> Atualize a página para jogar novamente <<", canvas.width / 2, statY + 280); 
+        
+        // --- ASSINATURA NO FIM ---
+        ctx.fillStyle = "#aaa"; ctx.font = "16px Arial"; 
+        ctx.fillText("Desenvolvido por: Anna Jullya Costa de Araujo", canvas.width / 2, canvas.height - 30);
+
         ctx.textAlign = "left"; 
     }
 
