@@ -48,7 +48,7 @@ let musicaTensa30s = new Audio("tensa.mp3"); musicaTensa30s.loop = true; musicaT
 let musicaAtiva = "MISTERIO"; 
 
 function gerenciarMusicaFundo() {
-    if (tempoRestante <= 30 && tempoRestante > 0 && estadoJogo !== "INTRO" && estadoJogo !== "FIM" && estadoJogo !== "FIM_TEMPO" && estadoJogo !== "EXPLICACAO_FINAL" && estadoJogo !== "CONFIRMACAO") {
+    if (tempoRestante <= 30 && tempoRestante > 0 && estadoJogo !== "CAPA" && estadoJogo !== "INTRO" && estadoJogo !== "FIM" && estadoJogo !== "FIM_TEMPO" && estadoJogo !== "EXPLICACAO_FINAL" && estadoJogo !== "CONFIRMACAO") {
         if (musicaAtiva !== "TENSA") {
             musicaMisterio.pause();
             musicaTensa30s.currentTime = 0; musicaTensa30s.play().catch(() => {});
@@ -74,13 +74,14 @@ window.addEventListener("click", ligarMusicaInicial, { once: true });
 window.addEventListener("keydown", ligarMusicaInicial, { once: true });
 
 // Imagens 
+let capaImg = carregarImagem("capa.png"); // <-- NOVA IMAGEM DA CAPA
 let mapaImg = carregarImagem("mapa.png"); let detetiveImg = carregarImagem("detetive.png");
 let zeImg = carregarImagem("ze.png"); let mariaImg = carregarImagem("maria.png");
 let padreImg = carregarImagem("padre.png"); let tiaoImg = carregarImagem("tiao.png");
 let rivalImg = carregarImagem("rival.png"); let inteImg = carregarImagem("inte.png"); 
 
 // --- VARIÁVEIS DE ESTADO ---
-let estadoJogo = "INTRO"; // Pode ser: INTRO, EXPLORANDO, DIALOGO, RIVAL_DIALOGO, TRANSICAO_FINAL, ACUSACAO, CONFIRMACAO, EXPLICACAO_FINAL, FIM, FIM_TEMPO
+let estadoJogo = "CAPA"; // Pode ser: CAPA, INTRO, EXPLORANDO, DIALOGO, RIVAL_DIALOGO, TRANSICAO_FINAL, ACUSACAO, CONFIRMACAO, EXPLICACAO_FINAL, FIM, FIM_TEMPO
 let npcFoco = null; let textoResposta = ""; 
 let pistasColetadas = 0; let totalPistas = 4; 
 let avisoSistema = ""; let timerAviso = 0;
@@ -192,8 +193,17 @@ function prepararExplicacao() {
 }
 
 function acionarAcao(tecla) {
+    // --- TELA DE CAPA ---
+    if (estadoJogo === "CAPA") {
+        if (tecla === " " || tecla.toLowerCase() === "a") {
+            somClickDialogo.play().catch(()=>{});
+            estadoJogo = "INTRO";
+        }
+        return;
+    }
+
     if (estadoJogo === "INTRO") {
-        if (tecla === " ") {
+        if (tecla === " " || tecla.toLowerCase() === "a") {
             somClickDialogo.play().catch(()=>{}); introFase++; charIndex = 0;
             if (introFase >= textosIntro.length) estadoJogo = "EXPLORANDO";
         }
@@ -206,10 +216,10 @@ function acionarAcao(tecla) {
         }
     }
     
-    if (cadernoAberto) { if (tecla === " ") { somMenuOpcoes.play().catch(()=>{}); cadernoAberto = false; } return; }
+    if (cadernoAberto) { if (tecla === " " || tecla.toLowerCase() === "a") { somMenuOpcoes.play().catch(()=>{}); cadernoAberto = false; } return; }
 
     if (estadoJogo === "RIVAL_DIALOGO") {
-        if (tecla === " ") {
+        if (tecla === " " || tecla.toLowerCase() === "a") {
             somClickDialogo.play().catch(()=>{}); 
             if (charIndex < textosRival[falaRival].length) { charIndex = textosRival[falaRival].length; } 
             else { falaRival++; charIndex = 0; if (falaRival >= textosRival.length) estadoJogo = "TRANSICAO_FINAL"; }
@@ -217,7 +227,7 @@ function acionarAcao(tecla) {
     }
 
     if (estadoJogo === "TRANSICAO_FINAL") {
-        if (tecla === " ") { somClickDialogo.play().catch(()=>{}); transicaoFase++; charIndex = 0; if (transicaoFase >= textosTransicao.length) estadoJogo = "ACUSACAO"; }
+        if (tecla === " " || tecla.toLowerCase() === "a") { somClickDialogo.play().catch(()=>{}); transicaoFase++; charIndex = 0; if (transicaoFase >= textosTransicao.length) estadoJogo = "ACUSACAO"; }
         return;
     }
 
@@ -225,7 +235,7 @@ function acionarAcao(tecla) {
     if (estadoJogo === "ACUSACAO") {
         if (tecla === "ArrowRight") { suspeitoSelecionado = (suspeitoSelecionado + 1) % 5; somMenuOpcoes.play().catch(()=>{}); }
         if (tecla === "ArrowLeft") { suspeitoSelecionado = (suspeitoSelecionado - 1 + 5) % 5; somMenuOpcoes.play().catch(()=>{}); }
-        if (tecla === " ") { somClickDialogo.play().catch(()=>{}); estadoJogo = "CONFIRMACAO"; } // VAI PARA A TELA DE CERTEZA
+        if (tecla === " " || tecla.toLowerCase() === "a") { somClickDialogo.play().catch(()=>{}); estadoJogo = "CONFIRMACAO"; } // VAI PARA A TELA DE CERTEZA
         return;
     }
 
@@ -240,7 +250,7 @@ function acionarAcao(tecla) {
 
     // --- TELA DA EXPLICAÇÃO DETALHADA ---
     if (estadoJogo === "EXPLICACAO_FINAL") {
-        if (tecla === " ") {
+        if (tecla === " " || tecla.toLowerCase() === "a") {
             somClickDialogo.play().catch(()=>{});
             if (charIndex < textosExplicacao[explicacaoFase].length) { charIndex = textosExplicacao[explicacaoFase].length; } 
             else { explicacaoFase++; charIndex = 0; if (explicacaoFase >= textosExplicacao.length) estadoJogo = "FIM"; }
@@ -248,14 +258,14 @@ function acionarAcao(tecla) {
         return;
     }
 
-    if (tecla === " " && estadoJogo === "EXPLORANDO") {
+    if ((tecla === " " || tecla.toLowerCase() === "a") && estadoJogo === "EXPLORANDO") {
         let hitboxInteracao = { x: detetive.x - 25, y: detetive.y - 25, w: detetive.w + 50, h: detetive.h + 50 };
         let pertoNPC = npcs.find(n => colidindo(hitboxInteracao, n)); let pertoItem = itensCenario.find(i => colidindo(hitboxInteracao, i) && !i.coletado);
 
         if (pertoNPC) { somClickDialogo.play().catch(()=>{}); npcFoco = pertoNPC; textoResposta = ""; charIndex = 0; estadoJogo = "DIALOGO"; } 
         else if (pertoItem) { somPista.play().catch(()=>{}); pertoItem.coletado = true; pistasColetadas++; anotacoes.push(pertoItem.textoPista); estadoJogo = "DIALOGO"; npcFoco = { nome: "NOVA ANOTAÇÃO", tipo: "sistema" }; textoResposta = `Você anotou uma pista no caderno! Aperte C para ler.`; charIndex = 0; }
     } 
-    else if (tecla === " " && estadoJogo === "DIALOGO" && textoResposta !== "") {
+    else if ((tecla === " " || tecla.toLowerCase() === "a") && estadoJogo === "DIALOGO" && textoResposta !== "") {
         if (charIndex < textoResposta.length) { charIndex = textoResposta.length; } else { somClickDialogo.play().catch(()=>{}); estadoJogo = "EXPLORANDO"; npcFoco = null; }
     }
 
@@ -273,7 +283,7 @@ function acionarAcao(tecla) {
 }
 
 window.addEventListener("keydown", (e) => {
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "1", "2", "c", "C"].includes(e.key)) { e.preventDefault(); }
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "a", "A", "1", "2", "c", "C"].includes(e.key)) { e.preventDefault(); }
     keys[e.key] = true; acionarAcao(e.key);
 });
 window.addEventListener("keyup", (e) => keys[e.key] = false);
@@ -324,6 +334,36 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // --- RENDERIZANDO A CAPA ---
+    if (estadoJogo === "CAPA") {
+        if (capaImg.complete && capaImg.naturalWidth > 0) {
+            ctx.drawImage(capaImg, 0, 0, canvas.width, canvas.height);
+        } else {
+            // Fundo de segurança caso a imagem não carregue rápido
+            ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "bold 40px Arial";
+            ctx.fillText("MISTÉRIO NA ROÇA", canvas.width / 2, canvas.height / 2);
+        }
+
+        // Fundo escuro leve para dar destaque ao texto
+        ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+        ctx.fillRect(0, canvas.height - 110, canvas.width, 110);
+
+        // Texto piscando
+        ctx.fillStyle = "#64ffda"; ctx.textAlign = "center"; ctx.font = "bold 26px Arial";
+        if (Math.floor(Date.now() / 600) % 2 === 0) {
+            ctx.fillText("[ Pressione A ou ESPAÇO para começar ]", canvas.width / 2, canvas.height - 60);
+        }
+
+        // Assinatura na capa
+        ctx.fillStyle = "#aaa"; ctx.font = "16px Arial"; 
+        ctx.fillText("Desenvolvido por: Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 25);
+        
+        ctx.textAlign = "left";
+        requestAnimationFrame(gameLoop);
+        return;
+    }
+
     if (estadoJogo === "INTRO" || estadoJogo === "TRANSICAO_FINAL") {
         ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "32px Arial";
@@ -332,7 +372,6 @@ function draw() {
         wrapText(ctx, txtOriginal.substring(0, Math.floor(charIndex)), canvas.width / 2, canvas.height / 2 - 60, 1000, 45);
         ctx.fillStyle = "#64ffda"; ctx.font = "20px Arial"; ctx.fillText("[ Aperte A (ou ESPAÇO) para continuar ]", canvas.width / 2, canvas.height - 80);
         
-        // --- ASSINATURA NA INTRO ---
         if (estadoJogo === "INTRO") {
             ctx.fillStyle = "#aaa"; ctx.font = "16px Arial"; 
             ctx.fillText("Desenvolvido por: Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 30);
@@ -418,12 +457,10 @@ function draw() {
         ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "bold 22px Arial"; ctx.fillText("⚠️ " + avisoSistema, canvas.width / 2, 113); ctx.textAlign = "left"; 
     }
 
-    // --- UI SUPERIOR ---
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(20, 20, 200, 45); ctx.strokeStyle = "#64ffda"; ctx.lineWidth = 2; ctx.strokeRect(20, 20, 200, 45); ctx.fillStyle = "#64ffda"; ctx.font = "bold 18px sans-serif"; ctx.fillText("🔎 Provas: " + pistasColetadas + " / " + totalPistas, 45, 48);
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(235, 20, 280, 45); ctx.strokeStyle = "#ffe600"; ctx.lineWidth = 2; ctx.strokeRect(235, 20, 280, 45); ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.fillText("📓 Aperte [ C ] para o Caderno", 255, 48);
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(canvas.width - 220, 20, 180, 45); let corTempo = tempoRestante <= 30 ? "#ff4444" : "#64ffda"; ctx.strokeStyle = corTempo; ctx.lineWidth = 2; ctx.strokeRect(canvas.width - 220, 20, 180, 45); ctx.fillStyle = corTempo; ctx.font = "bold 20px Arial"; ctx.fillText("⏳ Tempo: " + formatarTempo(tempoRestante), canvas.width - 200, 48);
 
-    // --- NOME DA CRIADORA SEMPRE NA TELA (Centro) ---
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; 
     ctx.fillRect(canvas.width / 2 - 225, 20, 450, 45); 
     ctx.strokeStyle = "#b5179e"; 
@@ -479,7 +516,6 @@ function draw() {
         ctx.fillStyle = corTitulo; ctx.font = "bold 70px sans-serif"; ctx.fillText(tituloFim, canvas.width / 2, canvas.height / 2 - 140);
         ctx.fillStyle = "white"; ctx.font = "26px sans-serif"; ctx.fillText("FIM DE JOGO", canvas.width / 2, canvas.height / 2 - 70);
 
-        // --- CAIXA DE ESTATÍSTICAS E NOTA FINAL ---
         let statY = canvas.height / 2 - 10;
         ctx.fillStyle = "rgba(255, 255, 255, 0.05)"; ctx.fillRect(canvas.width / 2 - 250, statY, 500, 220);
         ctx.strokeStyle = corTitulo; ctx.lineWidth = 3; ctx.strokeRect(canvas.width / 2 - 250, statY, 500, 220);
@@ -495,7 +531,6 @@ function draw() {
 
         ctx.fillStyle = "#64ffda"; ctx.font = "bold 20px sans-serif"; ctx.fillText(">> Atualize a página para jogar novamente <<", canvas.width / 2, statY + 280); 
         
-        // --- ASSINATURA NO FIM ---
         ctx.fillStyle = "#aaa"; ctx.font = "16px Arial"; 
         ctx.fillText("Desenvolvido por: Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 30);
 
