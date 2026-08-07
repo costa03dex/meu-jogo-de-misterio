@@ -102,46 +102,46 @@ let timerJogo = setInterval(() => {
 let detetive = { x: 660, y: 350, w: 85, h: 85, speed: 6 };
 
 let npcs = [
-    { nome: "Seu Zé", img: zeImg, x: 250, y: 280, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. Viu algo estranho na noite do roubo?", resposta1: "Vi o Rival correndo pra mata com um saco de moedas tilintando! Achei muito esquisito.", daPista1: true, textoPista1: "Rival foi visto correndo para a mata com um saco suspeito.", pergunta2: "2. Como é o Tião?", resposta2: "Tião é um trabalhador honesto, de família boa. Nunca pegou nem uma fruta do meu pomar sem pedir.", daPista2: false },
-    { nome: "Dona Maria", img: mariaImg, x: 1150, y: 550, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. O que encontrou na casa do Tião?", resposta1: "Achei uma luva de luxo, de couro caro, perto da janela do Tião. Ele mal tem dinheiro pra bota, quem dirá pra isso!", daPista1: true, textoPista1: "Luva de luxo encontrada perto da casa do Tião.", pergunta2: "2. Tião tem inimigos?", resposta2: "Apenas o Rival. Os dois brigaram feio na semana passada por causa das terras da divisa.", daPista2: false },
-    { nome: "Padre", img: padreImg, x: 1050, y: 250, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. O que o Tião fazia na hora do crime?", resposta1: "Ele estava comigo na igreja, ajudando a limpar os bancos. Ficou lá a manhã inteira.", daPista1: false, pergunta2: "2. O Rival tem se confessado?", resposta2: "Sim, confessou um plano terrível. Disse que daria um jeito de tirar o Tião das terras dele, custe o que custar.", daPista2: true, textoPista2: "Padre revelou que o Rival armou um plano de vingança contra Tião." },
-    { nome: "Tião", img: tiaoImg, x: 660, y: 600, w: 85, h: 85, tipo: "aliado", pistaColetada: false, pergunta1: "1. Fique calmo, vou te tirar dessa.", resposta1: "Obrigado, detetive! Eu juro que sou inocente. Estou apavorado de ir pra cadeia por algo que não fiz.", daPista1: false, pergunta2: "2. Quem te incriminou?", resposta2: "Só pode ser o engravatado do Rival! Ele sempre invejou meu pedaço de terra perto do rio.", daPista2: false },
-    { nome: "Rival", img: rivalImg, x: 150, y: 550, w: 85, h: 85, tipo: "rival", pistaColetada: false, pergunta1: "1. ESTOU PRONTO PARA ACUSAR ALGUÉM", resposta1: "", daPista1: false, pergunta2: "2. Ainda estou investigando (Sair)", resposta2: "Então vá trabalhar e não me faça perder tempo com suas presenças insolentes e perguntas idiotas!", daPista2: false }
+    { nome: "Seu Zé", img: zeImg, x: 250, y: 280, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. O que você viu na noite do crime?", resposta1: "Vi uma sombra correndo no escuro. A pessoa usava algo longo, como uma capa fina... ou seria uma batina? Mas os passos eram pesados, de sapato chique.", daPista1: true, textoPista1: "Sombra com roupa longa e sapatos caros vista fugindo da mansão.", pergunta2: "2. O Tião andava estranho?", resposta2: "Tião estava desesperado por dinheiro semana passada. Disse que faria 'qualquer loucura' pra não perder a fazenda.", daPista2: false },
+    { nome: "Dona Maria", img: mariaImg, x: 1150, y: 550, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. Achou algo perto da casa do Tião?", resposta1: "Achei essa luva de couro de luxo lá no mato. O bizarro é que ela cheira forte a incenso... incenso de igreja.", daPista1: true, textoPista1: "Luva de luxo com cheiro de incenso encontrada perto da casa do Tião.", pergunta2: "2. Como anda o Padre da cidade?", resposta2: "O Padre anda suando frio. O teto da matriz vai cair e a diocese negou ajuda. Ele precisa de muito dinheiro, urgente.", daPista2: false },
+    { nome: "Padre", img: padreImg, x: 1050, y: 250, w: 85, h: 85, tipo: "testemunha", pistaColetada: false, pergunta1: "1. Onde o Tião estava naquela noite?", resposta1: "Ele me procurou de madrugada. Estava sujo de barro, tremendo muito, e confessou ter 'fraquejado perante a tentação'.", daPista1: false, pergunta2: "2. Alguém agiu de forma suspeita?", resposta2: "O Rival fez uma doação enorme à igreja ontem. Em moedas de ouro antigas. E exigiu silêncio absoluto sobre a origem.", daPista2: true, textoPista2: "Rival doou ouro antigo para a igreja e exigiu silêncio." },
+    { nome: "Tião", img: tiaoImg, x: 660, y: 600, w: 85, h: 85, tipo: "aliado", pistaColetada: false, pergunta1: "1. Fale a verdade, Tião. Você esteve lá?", resposta1: "Eu... eu fui à mansão naquela noite! Fui implorar um empréstimo ao Jairo. Mas a janela já estava quebrada quando cheguei, eu juro por Deus!", daPista1: false, pergunta2: "2. Quem mais faria isso?", resposta2: "O Rival sempre quis minhas terras. Mas o Padre também sabia do meu desespero e que eu iria lá... qualquer um dos dois poderia armar para mim.", daPista2: false },
+    { nome: "Rival", img: rivalImg, x: 150, y: 550, w: 85, h: 85, tipo: "rival", pistaColetada: false, pergunta1: "1. ESTOU PRONTO PARA ACUSAR ALGUÉM", resposta1: "", daPista1: false, pergunta2: "2. Ainda estou investigando (Sair)", resposta2: "Ótimo. Não perca tempo comigo, vá interrogar quem realmente tem motivos para estar desesperado por dinheiro!", daPista2: false }
 ];
 
-let itensCenario = [{ nome: "Lenço de Seda", icone: "🧣", x: 850, y: 150, w: 40, h: 40, coletado: false, textoPista: "Lenço de seda sujo de barro com marcas de sapato caro ao lado." }];
+let itensCenario = [{ nome: "Lenço de Seda", icone: "🧣", x: 850, y: 150, w: 40, h: 40, coletado: false, textoPista: "Lenço chique com iniciais raspadas, sujo do mesmo barro vermelho das terras do Tião." }];
 
 let falaRival = 0; let transicaoFase = 0; let suspeitoSelecionado = 0; 
 let suspeitosNomes = ["Rival", "Tião", "Padre", "Seu Zé", "Dona Maria"];
 
 // --- TEXTOS ---
 let textosIntro = [
-    "Em um dia aparentemente comum na pequena cidade da roça, um grande crime abalou a tranquilidade dos moradores. No alto do morro, na casa mais luxuosa da região, vivia o respeitado presidente Jairo.",
-    "Jairo era conhecido por sua coleção de antiguidades, mas o seu maior orgulho era um raro relógio de ouro, passado de geração em geração na sua família.",
-    "Mas, ao amanhecer de domingo, uma notícia chocante se espalhou pela cidade: a janela da mansão estava quebrada e o relógio havia sumido!",
-    "O desaparecimento da preciosa herança gerou medo, dúvidas e muitas suspeitas. Entre os moradores, um nome logo começou a ser comentado: Tião, um humilde trabalhador rural.",
-    "As fofocas dizem que Tião foi visto rondando a casa do presidente. Porém, outros acreditam que alguém muito mais poderoso está por trás disso para incriminá-lo.",
-    "Sua missão será investigar as pistas, interrogar os suspeitos, descobrir o verdadeiro ladrão e provar se Tião é culpado ou inocente.",
-    "O tempo está correndo! Reúna as provas no seu caderno.",
-    "Boa sorte, detetive. O trem parte em 3 minutos! Solucione o caso antes que o culpado fuja para sempre."
+    "Em um dia aparentemente comum na pacata cidade da roça, um grande crime abalou a tranquilidade de todos. O cobiçado e raro relógio de ouro do presidente Jairo foi roubado!",
+    "A janela da mansão foi quebrada na calada da noite. O problema é que, nesta cidade, quase todo mundo tinha um motivo para roubar.",
+    "Tião, o trabalhador rural, estava endividado e ameaçado de perder suas terras.",
+    "O Padre enfrentava a ruína da igreja matriz, precisando de dinheiro vivo urgentemente.",
+    "E o Rival, o engravatado da cidade, estava prestes a perder seus contratos milionários com o presidente.",
+    "Sua missão será investigar as pistas, interrogar os suspeitos, e descobrir quem está falando a verdade no meio de tantas mentiras.",
+    "Mas cuidado: nada é o que parece. Não confie na primeira intuição. Reúna as provas no seu caderno.",
+    "Boa sorte, detetive. O trem de fuga parte em 3 minutos! Solucione o mistério antes que o verdadeiro culpado escape."
 ];
 let introFase = 0;
 
 let textosRival = [
-    "Detetive, tenha dó de mim! Sou um homem muito respeitado, um empresário de sucesso e de grande prestígio nesta cidade...",
-    "Olhe bem para as minhas roupas! Acha mesmo que eu sujaria minhas mãos de terra para roubar um simples relógio?",
-    "Mas confesso que, nos últimos dias, o presidente Jairo se voltou contra mim. Não sei o motivo, mas ele passou a me tratar com desconfiança e ameaçou cancelar nossos contratos.",
-    "Apesar disso, eu juro pela minha honra: jamais faria uma coisa dessas com ele. Posso ter minhas diferenças e ambições, mas nunca roubarei uma relíquia de família.",
-    "Estão tentando armar para mim! Esse Tião e o Padre vivem cochichando pelos cantos.",
-    "Peço apenas que investigue os fatos antes de me julgar. Encontre o verdadeiro culpado e prove minha inocência, ou lidará com os meus advogados!"
+    "Detetive, olhe para mim. Sou o empresário mais rico da cidade. Por que eu me sujaria para roubar um simples relógio?",
+    "É verdade que o presidente Jairo ameaçou me arruinar nos negócios. Eu precisava saber os planos dele contra mim.",
+    "Confesso uma coisa: eu estive nos jardins da mansão naquela noite, escondido com uma capa. Fui tentar ouvir alguma conversa.",
+    "Mas quando me aproximei, vi o Tião fugindo de lá apavorado! E o Padre estava rezando na capela, logo ao lado da janela...",
+    "Alguém lá dentro quebrou o vidro e levou o relógio. Eu corri para a mata para não ser visto. Sou um espião de negócios, não um ladrão!",
+    "Pense bem, detetive. Você tem provas que fui EU quem entrou lá? Ou vai acusar o primeiro que viu de terno e sapato caro?"
 ];
 
 let textosTransicao = [
     "E agora, detetive? Você andou pela cidade, conversou com os moradores e colheu evidências.",
-    "Todos os envolvidos parecem esconder algum segredo. As versões se contradizem.",
-    "Algumas provas apontam para um suspeito óbvio, enquanto outras parecem inocentá-lo. Em quem você deve confiar?",
-    "Chegou o momento da verdade. Pense bem nas anotações do seu caderno.",
-    "Quem roubou o relógio de ouro do presidente Jairo?"
+    "As histórias se cruzam. O Tião confessa que estava na cena do crime. O Padre recebeu ouro e tinha uma luva perfumada com incenso perto da casa do Tião...",
+    "E o Rival admite ter ido à mansão com uma capa e sapato caro, mas jura que apenas espionava.",
+    "Três suspeitos no local do crime. Três motivos. Apenas um mentiroso.",
+    "Analise seu caderno. Pense nas provas. Quem cometeu o roubo do relógio de ouro?"
 ];
 let textosExplicacao = []; let explicacaoFase = 0;
 
@@ -150,35 +150,43 @@ let keys = {};
 function prepararExplicacao() {
     if (suspeitoSelecionado === 0 && pistasColetadas >= totalPistas) {
         textosExplicacao = [
-            "Você apresentou todas as 4 provas irrefutáveis contra o Rival perante a cidade.",
-            "Sem saída diante das evidências de sua luva, pegadas e relatos de testemunhas, ele desabou.",
-            "O Rival confessou ter roubado o relógio e armado para Tião a fim de desvalorizar e comprar suas terras.",
-            "Com a confissão, a polícia algemou o engravatado na mesma hora.",
-            "Tião foi inocentado, o relógio foi devolvido ao presidente, e você virou a lenda da cidade!"
+            "Você acusou o Rival perante toda a cidade, e ele deu uma risada de deboche.",
+            "Mas quando você cruzou as provas: a doação em ouro suspeita, a capa vista por Seu Zé e o barro no lenço...",
+            "Ele percebeu que seu álibi falso de 'apenas espionar' não parava em pé. A luva chique era dele, apenas manchada com o incenso da igreja!",
+            "O Rival roubou o relógio, deixou as provas perto da casa do Tião para incriminá-lo, e doou um pouco de ouro ao Padre para comprar seu silêncio.",
+            "Preso em flagrante, o engravatado desabou. Você desmascarou o plano perfeito e virou lenda na cidade!"
         ];
     } else if (suspeitoSelecionado === 0 && pistasColetadas < totalPistas) {
         textosExplicacao = [
             "Você acusou o Rival publicamente diante de toda a cidade.",
-            "Porém, como você não reuniu todas as provas no caderno, o advogado dele desqualificou a denúncia.",
-            "Ele alegou que as poucas evidências que você tinha eram meramente circunstanciais.",
-            "O caso foi encerrado por falta de provas concretas e o Rival saiu livre, rindo da sua cara.",
-            "O paradeiro do relógio continuou sendo um mistério frustrante..."
+            "Porém, como você não reuniu todas as provas no caderno, ele sorriu calmamente.",
+            "Seu advogado argumentou que o Tião estava na mansão e que o Padre era mais suspeito por conta da luva com incenso.",
+            "Sem as evidências completas, você foi feito de bobo no tribunal.",
+            "O Rival foi inocentado, o relógio sumiu, e o verdadeiro ladrão riu por último."
         ];
     } else if (suspeitoSelecionado === 2) {
         textosExplicacao = [
-            "Você surpreendeu a todos e apontou o dedo para o Padre!",
-            "Um choque tomou conta da cidade. Murmúrios indignados encheram o ar.",
-            "Abalado pela sua intuição afiada, o Padre caiu de joelhos e começou a chorar desesperadamente.",
-            "Ele confessou o roubo em um momento de fraqueza para pagar as pesadas dívidas da igreja matriz...",
-            "Uma resolução trágica e de partir o coração para uma cidade tão pacata."
+            "Você juntou as peças: o incenso na luva, a doação em ouro e o desespero financeiro... E acusou o Padre!",
+            "Um murmúrio de choque tomou a praça. O Padre, com lágrimas nos olhos, caiu de joelhos.",
+            "Ele confessou que, vendo a janela aberta após a fuga do Tião e do Rival, entrou e pegou o relógio num momento de fraqueza.",
+            "Ele usou parte do ouro para pagar as dívidas da igreja e calar sua culpa.",
+            "Uma resolução trágica e sombria. O mistério foi resolvido, mas a cidade perdeu a fé..."
+        ];
+    } else if (suspeitoSelecionado === 1) {
+        textosExplicacao = [
+            "Você apontou o dedo para Tião, o suspeito mais óbvio.",
+            "A polícia o levou imediatamente, baseada na sua confissão de estar na mansão naquela noite.",
+            "Tião chorava dizendo que apenas foi lá para implorar dinheiro.",
+            "Uma semana depois, você descobre que as terras do Tião foram compradas a preço de banana pelo Rival.",
+            "Você enviou um homem inocente e desesperado para a cadeia, caindo direitinho na armadilha..."
         ];
     } else {
         textosExplicacao = [
-            `Você acusou ${suspeitosNomes[suspeitoSelecionado]} pelo roubo do relógio de ouro.`,
-            "A polícia prendeu o suspeito rapidamente baseada unicamente na sua palavra de detetive.",
-            "Dias depois, uma notícia devastadora chegou: o relógio foi visto sendo leiloado na capital...",
-            "O verdadeiro ladrão usou a sua acusação falsa como distração e escapou no trem das 18h.",
-            "Você mandou um inocente para a prisão e arruinou sua reputação."
+            `Você acusou ${suspeitosNomes[suspeitoSelecionado]} sem muito sentido.`,
+            "A cidade inteira olhou para você com desconfiança.",
+            "A polícia se recusou a prender o suspeito com acusações tão fracas.",
+            "Naquela mesma noite, a silhueta de alguém vestindo uma capa embarcou no trem com um pequeno pacote brilhante.",
+            "Você falhou como detetive, e o caso foi arquivado para sempre."
         ];
     }
 }
@@ -457,13 +465,15 @@ function draw() {
         
         let tituloFim = ""; let corTitulo = ""; let nota = "";
         if (suspeitoSelecionado === 0 && pistasColetadas >= totalPistas) { 
-            tituloFim = "🏆 FINAL VERDADEIRO"; corTitulo = "#ffe600"; nota = "A";
+            tituloFim = "🏆 FINAL VERDADEIRO"; corTitulo = "#ffe600"; nota = "A+";
         } else if (suspeitoSelecionado === 0 && pistasColetadas < totalPistas) { 
             tituloFim = "⚖️ FINAL NEUTRO"; corTitulo = "#a8a8a8"; nota = "B";
         } else if (suspeitoSelecionado === 2) { 
             tituloFim = "🤫 FINAL SECRETO"; corTitulo = "#b5179e"; nota = "?";
+        } else if (suspeitoSelecionado === 1) { 
+            tituloFim = "⚖️ ERRO GRAVE"; corTitulo = "#ff8800"; nota = "C";
         } else { 
-            tituloFim = "❌ FINAL RUIM"; corTitulo = "#ff4444"; nota = "C";
+            tituloFim = "❌ FINAL RUIM"; corTitulo = "#ff4444"; nota = "D";
         }
 
         ctx.fillStyle = corTitulo; ctx.font = "bold 70px sans-serif"; ctx.fillText(tituloFim, canvas.width / 2, canvas.height / 2 - 140);
@@ -475,10 +485,10 @@ function draw() {
         ctx.strokeStyle = corTitulo; ctx.lineWidth = 3; ctx.strokeRect(canvas.width / 2 - 250, statY, 500, 220);
 
         ctx.fillStyle = "white"; ctx.font = "24px Arial";
-        let acusacaoTxt = suspeitoSelecionado === 0 ? "Sim" : "Não";
+        let acusacaoTxt = suspeitoSelecionado === 0 ? "Correta" : "Incorreta";
         ctx.fillText(`Tempo restante: ${formatarTempo(tempoRestante)}`, canvas.width / 2, statY + 45);
         ctx.fillText(`Provas encontradas: ${pistasColetadas} / ${totalPistas}`, canvas.width / 2, statY + 85);
-        ctx.fillText(`Acusação correta: ${acusacaoTxt}`, canvas.width / 2, statY + 125);
+        ctx.fillText(`Acusação: ${acusacaoTxt}`, canvas.width / 2, statY + 125);
 
         ctx.fillStyle = corTitulo; ctx.font = "bold 34px Arial";
         ctx.fillText(`Nota de Detetive: ${nota}`, canvas.width / 2, statY + 185);
