@@ -316,7 +316,7 @@ function draw() {
         // --- ASSINATURA NA INTRO ---
         if (estadoJogo === "INTRO") {
             ctx.fillStyle = "#aaa"; ctx.font = "16px Arial"; 
-            ctx.fillText("Desenvolvido por: Anna Jullya Costa de Araujo", canvas.width / 2, canvas.height - 30);
+            ctx.fillText("Desenvolvido por: Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 30);
         }
 
         ctx.textAlign = "left"; requestAnimationFrame(gameLoop); return; 
@@ -399,9 +399,22 @@ function draw() {
         ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "bold 22px Arial"; ctx.fillText("⚠️ " + avisoSistema, canvas.width / 2, 113); ctx.textAlign = "left"; 
     }
 
+    // --- UI SUPERIOR ---
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(20, 20, 200, 45); ctx.strokeStyle = "#64ffda"; ctx.lineWidth = 2; ctx.strokeRect(20, 20, 200, 45); ctx.fillStyle = "#64ffda"; ctx.font = "bold 18px sans-serif"; ctx.fillText("🔎 Provas: " + pistasColetadas + " / " + totalPistas, 45, 48);
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(235, 20, 280, 45); ctx.strokeStyle = "#ffe600"; ctx.lineWidth = 2; ctx.strokeRect(235, 20, 280, 45); ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.fillText("📓 Aperte [ C ] para o Caderno", 255, 48);
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(canvas.width - 220, 20, 180, 45); let corTempo = tempoRestante <= 30 ? "#ff4444" : "#64ffda"; ctx.strokeStyle = corTempo; ctx.lineWidth = 2; ctx.strokeRect(canvas.width - 220, 20, 180, 45); ctx.fillStyle = corTempo; ctx.font = "bold 20px Arial"; ctx.fillText("⏳ Tempo: " + formatarTempo(tempoRestante), canvas.width - 200, 48);
+
+    // --- NOME DA CRIADORA SEMPRE NA TELA (Centro) ---
+    ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; 
+    ctx.fillRect(canvas.width / 2 - 225, 20, 450, 45); 
+    ctx.strokeStyle = "#b5179e"; 
+    ctx.lineWidth = 2; 
+    ctx.strokeRect(canvas.width / 2 - 225, 20, 450, 45); 
+    ctx.fillStyle = "white"; 
+    ctx.textAlign = "center"; 
+    ctx.font = "bold 18px sans-serif"; 
+    ctx.fillText("Desenvolvido por: Anna Jullya Costa De Araujo", canvas.width / 2, 48); 
+    ctx.textAlign = "left";
 
     if (cadernoAberto) {
         ctx.fillStyle = "rgba(0, 0, 0, 0.8)"; ctx.fillRect(0, 0, canvas.width, canvas.height); let cX = canvas.width / 2 - 350; let cY = 100;
@@ -463,7 +476,7 @@ function draw() {
         
         // --- ASSINATURA NO FIM ---
         ctx.fillStyle = "#aaa"; ctx.font = "16px Arial"; 
-        ctx.fillText("Desenvolvido por: Anna Jullya Costa de Araujo", canvas.width / 2, canvas.height - 30);
+        ctx.fillText("Desenvolvido por: Anna Jullya Costa De Araujo", canvas.width / 2, canvas.height - 30);
 
         ctx.textAlign = "left"; 
     }
