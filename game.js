@@ -461,17 +461,13 @@ function draw() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(235, 20, 280, 45); ctx.strokeStyle = "#ffe600"; ctx.lineWidth = 2; ctx.strokeRect(235, 20, 280, 45); ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.fillText("📓 Aperte [ C ] para o Caderno", 255, 48);
     ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx.fillRect(canvas.width - 220, 20, 180, 45); let corTempo = tempoRestante <= 30 ? "#ff4444" : "#64ffda"; ctx.strokeStyle = corTempo; ctx.lineWidth = 2; ctx.strokeRect(canvas.width - 220, 20, 180, 45); ctx.fillStyle = corTempo; ctx.font = "bold 20px Arial"; ctx.fillText("⏳ Tempo: " + formatarTempo(tempoRestante), canvas.width - 200, 48);
 
-    ctx.fillStyle = "rgba(0, 0, 0, 0.85)"; 
-    ctx.fillRect(canvas.width / 2 - 225, 20, 450, 45); 
-    ctx.strokeStyle = "#b5179e"; 
-    ctx.lineWidth = 2; 
-    ctx.strokeRect(canvas.width / 2 - 225, 20, 450, 45); 
-    ctx.fillStyle = "white"; 
+    // --- ASSINATURA TRANSPARENTE SEM CAIXA ---
+    ctx.fillStyle = "rgba(255, 255, 255, 0.4)"; // O "0.4" controla a transparência (40% visível)
     ctx.textAlign = "center"; 
     ctx.font = "bold 18px sans-serif"; 
     ctx.fillText("Desenvolvido por: Anna Jullya Costa De Araujo", canvas.width / 2, 48); 
     ctx.textAlign = "left";
-
+    
     if (cadernoAberto) {
         ctx.fillStyle = "rgba(0, 0, 0, 0.8)"; ctx.fillRect(0, 0, canvas.width, canvas.height); let cX = canvas.width / 2 - 350; let cY = 100;
         ctx.fillStyle = "#fef3c7"; ctx.fillRect(cX, cY, 700, 500); ctx.strokeStyle = "#8b5a2b"; ctx.lineWidth = 6; ctx.strokeRect(cX, cY, 700, 500); ctx.fillStyle = "#8b5a2b"; ctx.fillRect(cX, cY, 40, 500);
